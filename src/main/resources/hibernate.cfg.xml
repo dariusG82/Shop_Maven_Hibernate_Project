@@ -1,0 +1,19 @@
+<hibernate-configuration xmlns="http://www.hibernate.org/xsd/orm/cfg">
+    <session-factory>
+        <property name="hibernate.dialect">org.sqlite.hibernate.dialect.SQLiteDialect</property>
+        <property name="hibernate.connection.driver_class">org.sqlite.JDBC</property>
+        <property name="hibernate.connection.url">
+            jdbc:sqlite:C:/Users/konja/IdeaProjects/CodeAcademy/Shop_Maven_Hibernate_Project/src/main/java/dariusG82/data/bussines.db
+        </property>
+
+        <mapping class="dariusG82.partners.Client"/>
+        <mapping class="dariusG82.users.User"/>
+        <mapping class="dariusG82.warehouse.Item"/>
+        <mapping class="dariusG82.accounting.orders.Order"/>
+        <mapping class="dariusG82.accounting.orders.OrderLine"/>
+        <mapping class="dariusG82.accounting.finance.Balance"/>
+        <mapping class="dariusG82.accounting.finance.CashRecord"/>
+        <mapping class="dariusG82.accounting.finance.CashJournalEntry"/>
+
+    </session-factory>
+</hibernate-configuration>
