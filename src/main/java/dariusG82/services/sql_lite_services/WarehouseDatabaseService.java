@@ -1,14 +1,14 @@
 package dariusG82.services.sql_lite_services;
 
 import dariusG82.accounting.orders.OrderLine;
+import dariusG82.custom_exeptions.ItemIsAlreadyInDatabaseException;
 import dariusG82.custom_exeptions.ItemIsNotInWarehouseExeption;
-import dariusG82.custom_exeptions.WrongDataPathExeption;
 import dariusG82.data.interfaces.WarehouseInterface;
-import dariusG82.services.file_services.DataPath;
 import dariusG82.warehouse.Item;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.CriteriaUpdate;
@@ -17,47 +17,41 @@ import java.util.List;
 
 public class WarehouseDatabaseService extends SQLService implements WarehouseInterface {
 
-    private final DataFromSQLiteService dataService;
-
-    public WarehouseDatabaseService(DataFromSQLiteService dataService) {
-        this.dataService = dataService;
-    }
-
     @Override
-    public void receiveGoods(int purchaseOrder) throws WrongDataPathExeption {
-        List<OrderLine> purchaseOrdersLines = dataService.getAllOrderLines(DataPath.PURCHASE_ORDERS_LINES_PATH);
-        List<OrderLine> currentOrderLines = purchaseOrdersLines.stream()
-                .filter(orderLine -> orderLine.getOrderNumber() == purchaseOrder)
-                .toList();
+    public void receiveGoods(long purchaseOrder) {
+        Session session = sessionFactory.openSession();
 
-        currentOrderLines.forEach(this::updateWarehouseStock);
+        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+        CriteriaQuery<OrderLine> criteriaQuery = criteriaBuilder.createQuery(OrderLine.class);
+        Root<OrderLine> root = criteriaQuery.from(OrderLine.class);
+
+        criteriaQuery.select(root).where(criteriaBuilder.and(
+                criteriaBuilder.equal(root.get("orderSeries"), "PO"),
+                criteriaBuilder.equal(root.get("orderNumber"), purchaseOrder)
+        ));
+
+        Query<OrderLine> query = session.createQuery(criteriaQuery);
+        List<OrderLine> orderLines = query.getResultList();
+
+        session.close();
+
+        orderLines.forEach(this::updateWarehouseStock);
     }
 
     @Override
     public Item getItemFromWarehouse(String itemName) throws ItemIsNotInWarehouseExeption {
-        Session session = sessionFactory.openSession();
+        Item item = getItemByName(itemName);
 
-        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
-        CriteriaQuery<Item> criteriaQuery = criteriaBuilder.createQuery(Item.class);
-        Root<Item> root = criteriaQuery.from(Item.class);
-        criteriaQuery.select(root).where(criteriaBuilder.equal(root.get("itemName"), itemName));
-
-        Query<Item> itemQuery = session.createQuery(criteriaQuery);
-
-        List<Item> items = itemQuery.getResultList();
-
-        session.close();
-
-        if(items.size() == 0){
+        if(item == null){
             throw new ItemIsNotInWarehouseExeption();
         }
 
-        return items.get(0);
+        return item;
     }
 
     @Override
     public void updateWarehouseStock(OrderLine orderLine) {
-        int itemId = orderLine.getItemID();
+        long itemId = orderLine.getItemID();
         Item item = getItemById(itemId);
 
         int currentQuantity = item.getStockQuantity() + orderLine.getLineQuantity();
@@ -94,22 +88,36 @@ public class WarehouseDatabaseService extends SQLService implements WarehouseInt
 
     @Override
     public Item getItemByName(String itemName) {
-        List<Item> items = getAllWarehouseItems();
+        Session session = sessionFactory.openSession();
 
-        return items.stream()
-                .filter(item -> item.getItemName().equals(itemName))
-                .findFirst()
-                .orElse(null);
+        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+        CriteriaQuery<Item> criteriaQuery = criteriaBuilder.createQuery(Item.class);
+        Root<Item> root = criteriaQuery.from(Item.class);
+
+        criteriaQuery.select(root).where(criteriaBuilder.equal(root.get("itemName"), itemName));
+        Query<Item> itemQuery = session.createQuery(criteriaQuery);
+        Item item = itemQuery.getSingleResult();
+
+        session.close();
+
+        return item;
     }
 
     @Override
-    public Item getItemById(int id) {
-        List<Item> items = getAllWarehouseItems();
+    public Item getItemById(long id) {
+        Session session = sessionFactory.openSession();
 
-        return items.stream()
-                .filter(item -> item.getItemId() == id)
-                .findFirst()
-                .orElse(null);
+        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+        CriteriaQuery<Item> criteriaQuery = criteriaBuilder.createQuery(Item.class);
+        Root<Item> root = criteriaQuery.from(Item.class);
+
+        criteriaQuery.select(root).where(criteriaBuilder.equal(root.get("itemId"), id));
+        Query<Item> itemQuery = session.createQuery(criteriaQuery);
+        Item item = itemQuery.getSingleResult();
+
+        session.close();
+
+        return item;
     }
 
     @Override
@@ -124,13 +132,49 @@ public class WarehouseDatabaseService extends SQLService implements WarehouseInt
     }
 
     @Override
-    public int getNewItemID() {
-        List<Item> items = dataService.getAllItems();
+    public long getNewItemID() {
+        Session session = sessionFactory.openSession();
 
-        if(items == null){
-            return 1;
+        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+        CriteriaQuery<Long> criteriaQuery = criteriaBuilder.createQuery(Long.class);
+        Root<Item> root = criteriaQuery.from(Item.class);
+
+        criteriaQuery.select(criteriaBuilder.count(root));
+        TypedQuery<Long> query = session.createQuery(criteriaQuery);
+        Long count = query.getSingleResult();
+
+        session.close();
+
+        return count + 1;
+    }
+
+    @Override
+    public void addNewItemCard(Item newItem) throws ItemIsAlreadyInDatabaseException {
+
+        Item item = getItemByName(newItem.getItemName());
+
+        if(item == null){
+            Session session = sessionFactory.openSession();
+
+            session.beginTransaction();
+            session.persist(newItem);
+            session.getTransaction().commit();
+
+            session.close();
+        } else {
+            throw new ItemIsAlreadyInDatabaseException();
         }
+    }
 
-        return items.size() + 1;
+    @Override
+    public List<Item> getAllItems() {
+        Session session = sessionFactory.openSession();
+
+        Query<Item> itemQuery = session.createQuery("select data from Item data", Item.class);
+        List<Item> items = itemQuery.getResultList();
+
+        session.close();
+
+        return items;
     }
 }

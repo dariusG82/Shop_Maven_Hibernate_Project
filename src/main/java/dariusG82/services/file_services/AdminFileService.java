@@ -3,31 +3,24 @@ package dariusG82.services.file_services;
 import dariusG82.custom_exeptions.UserNotFoundException;
 import dariusG82.custom_exeptions.WrongDataPathExeption;
 import dariusG82.data.interfaces.AdminInterface;
-import dariusG82.data.interfaces.DataManagement;
 import dariusG82.data.interfaces.FileReaderInterface;
 import dariusG82.users.User;
 import dariusG82.users.UserType;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 import static dariusG82.services.file_services.DataFileIndex.CURRENT_DATE;
 import static dariusG82.services.file_services.DataPath.USERS_DATA_PATH;
 
 public class AdminFileService implements AdminInterface, FileReaderInterface {
 
-    private final DataManagement dataService;
-    public AdminFileService(DataManagement dataService){
-        this.dataService = dataService;
-    }
-
     @Override
     public boolean isUsernameUnique(String username) {
-        List<User> users = dataService.getAllUsers();
+        List<User> users = getAllUsers();
         for (User user : users) {
             if (user.getUsername().equals(username)) {
                 return false;
@@ -38,7 +31,7 @@ public class AdminFileService implements AdminInterface, FileReaderInterface {
 
     @Override
     public void addNewUser(User user) throws IOException {
-        List<User> users = dataService.getAllUsers();
+        List<User> users = getAllUsers();
 
         users.add(user);
 
@@ -47,7 +40,7 @@ public class AdminFileService implements AdminInterface, FileReaderInterface {
 
     @Override
     public void removeUser(String username) throws UserNotFoundException, IOException {
-        List<User> users = dataService.getAllUsers();
+        List<User> users = getAllUsers();
 
         if (isUserInDatabase(username)) {
             users.removeIf(user -> user.getUsername().equals(username));
@@ -59,7 +52,7 @@ public class AdminFileService implements AdminInterface, FileReaderInterface {
     }
 
     @Override
-    public User getUserByType(String username, String password, UserType type) throws UserNotFoundException {
+    public User getUser(String username, String password, UserType type) throws UserNotFoundException {
         User user = getUserByUsername(username);
 
         if(user != null && user.getUserType().equals(type.toString()) && user.getPassword().equals(password)){
@@ -71,7 +64,7 @@ public class AdminFileService implements AdminInterface, FileReaderInterface {
 
     @Override
     public User getUserByUsername(String username) {
-        List<User> users = dataService.getAllUsers();
+        List<User> users = getAllUsers();
 
         for (User user : users) {
             if (user.getUsername().equals(username)) {
@@ -100,7 +93,7 @@ public class AdminFileService implements AdminInterface, FileReaderInterface {
     }
 
     private boolean isUserInDatabase(String username) {
-        List<User> users = dataService.getAllUsers();
+        List<User> users = getAllUsers();
 
         for (User user : users) {
             if (user.getUsername().equals(username)) {
@@ -123,5 +116,38 @@ public class AdminFileService implements AdminInterface, FileReaderInterface {
         }
 
         printWriter.close();
+    }
+
+    public List<User> getAllUsers() {
+        try {
+            Scanner scanner = new Scanner(new File(USERS_DATA_PATH.getPath()));
+            ArrayList<User> users = new ArrayList<>();
+
+            while (scanner.hasNext()) {
+                String name = scanner.nextLine();
+                String surname = scanner.nextLine();
+                String username = scanner.nextLine();
+                String password = scanner.nextLine();
+                UserType type = getUserType(scanner);
+                if (type != null) {
+                    User user = new User(name, surname, username, password, type);
+                    users.add(user);
+                }
+                scanner.nextLine();
+            }
+
+            return users;
+        } catch (FileNotFoundException e) {
+            return null;
+        }
+    }
+
+    private UserType getUserType(Scanner scanner) {
+        String type = scanner.nextLine();
+        try {
+            return UserType.valueOf(type);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 }

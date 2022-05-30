@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface WarehouseInterface {
 
-    void receiveGoods(int purchaseOrder) throws OrderDoesNotExistException, IOException, ItemIsNotInWarehouseExeption, WrongDataPathExeption;
+    void receiveGoods(long purchaseOrder) throws OrderDoesNotExistException, IOException, ItemIsNotInWarehouseExeption, WrongDataPathExeption;
 
     Item getItemFromWarehouse(String itemName) throws ItemIsNotInWarehouseExeption;
 
@@ -22,9 +22,13 @@ public interface WarehouseInterface {
 
     Item getItemByName(String itemName);
 
-    Item getItemById(int id);
+    Item getItemById(long id);
 
     void addNewItem(Item item) throws ItemIsAlreadyInDatabaseException, IOException;
 
-    int getNewItemID();
+    long getNewItemID();
+
+    void addNewItemCard(Item newItem) throws ItemIsAlreadyInDatabaseException, IOException;
+
+    List<Item> getAllItems();
 }

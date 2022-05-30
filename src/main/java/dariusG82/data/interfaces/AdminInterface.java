@@ -5,6 +5,7 @@ import dariusG82.users.User;
 import dariusG82.users.UserType;
 
 import java.io.IOException;
+import java.util.List;
 
 public interface AdminInterface {
 
@@ -14,7 +15,9 @@ public interface AdminInterface {
 
     void removeUser(String username) throws UserNotFoundException, IOException;
 
-    User getUserByType(String username, String password, UserType type) throws UserNotFoundException;
+    List<User> getAllUsers();
+
+    User getUser(String username, String password, UserType type) throws UserNotFoundException;
 
     User getUserByUsername(String username);
 }

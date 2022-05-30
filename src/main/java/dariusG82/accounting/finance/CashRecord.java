@@ -9,16 +9,16 @@ import javax.persistence.Table;
 public class CashRecord {
 
     @Id
-    private int recordID;
+    private long recordID;
     private double amount;
-    private String recordDate;
-    private int orderNumber;
+    public String recordDate;
+    private long orderNumber;
     private String orderSeries;
     private String sellerId;
 
     public CashRecord() {
     }
-    public CashRecord(int recordID, double amount, String recordDate, int orderNumber, String orderSeries, String sellerId) {
+    public CashRecord(long recordID, double amount, String recordDate, long orderNumber, String orderSeries, String sellerId) {
         this.recordID = recordID;
         this.amount = amount;
         this.recordDate = recordDate;
@@ -27,7 +27,7 @@ public class CashRecord {
         this.sellerId = sellerId;
     }
 
-    public CashRecord(double amount, String recordDate, int orderNumber, String orderSeries, String sellerId) {
+    public CashRecord(double amount, String recordDate, long orderNumber, String orderSeries, String sellerId) {
         this.recordID = 0;
         this.amount = amount;
         this.recordDate = recordDate;
@@ -36,11 +36,11 @@ public class CashRecord {
         this.sellerId = sellerId;
     }
 
-    public int getRecordID() {
+    public long getRecordID() {
         return recordID;
     }
 
-    public void setRecordID(int recordID) {
+    public void setRecordID(long recordID) {
         this.recordID = recordID;
     }
 
@@ -60,11 +60,11 @@ public class CashRecord {
         this.recordDate = recordDate;
     }
 
-    public int getOrderNumber() {
+    public long getOrderNumber() {
         return orderNumber;
     }
 
-    public void setOrderNumber(int orderNumber) {
+    public void setOrderNumber(long orderNumber) {
         this.orderNumber = orderNumber;
     }
 

@@ -1,19 +1,24 @@
 package dariusG82.services.file_services;
 
+import dariusG82.accounting.DailyReport;
+import dariusG82.accounting.finance.CashJournalEntry;
 import dariusG82.accounting.finance.CashOperation;
 import dariusG82.accounting.finance.CashRecord;
 import dariusG82.accounting.orders.Order;
 import dariusG82.accounting.orders.OrderLine;
+import dariusG82.accounting.orders.OrderSeries;
 import dariusG82.custom_exeptions.NegativeBalanceException;
 import dariusG82.custom_exeptions.WrongDataPathExeption;
 import dariusG82.data.interfaces.AccountingInterface;
 import dariusG82.data.interfaces.FileReaderInterface;
 import dariusG82.warehouse.Item;
 
-import java.io.IOException;
+import java.io.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
+import java.util.stream.Collectors;
 
 import static dariusG82.accounting.orders.OrderSeries.SALE;
 import static dariusG82.services.file_services.DataFileIndex.*;
@@ -21,20 +26,17 @@ import static dariusG82.services.file_services.DataPath.*;
 
 public class AccountingFileService implements AccountingInterface, FileReaderInterface {
 
-    private final DataFromFileService dataService;
-
-    public AccountingFileService(DataFromFileService dataService) {
-        this.dataService = dataService;
-    }
+    WarehouseFileService warehouseFileService = new WarehouseFileService();
+    AdminFileService adminFileService = new AdminFileService();
 
     @Override
-    public void addNewCashRecord(CashRecord cashRecord) throws IOException {
-        List<CashRecord> allCashRecords = dataService.getAllCashRecords();
+    public void addNewCashRecord(CashRecord cashRecord) {
+        List<CashRecord> allCashRecords = getAllCashRecords();
 
         if (allCashRecords != null) {
             allCashRecords.add(cashRecord);
             List<CashRecord> uniqueRecords = sumCashRecordsByID(allCashRecords);
-            dataService.rewriteDailyBalance(uniqueRecords);
+            rewriteDailyBalance(uniqueRecords);
         }
     }
 
@@ -61,7 +63,7 @@ public class AccountingFileService implements AccountingInterface, FileReaderInt
     }
 
     private Order getOrder(DataPath orderDataPath, int orderNr) throws WrongDataPathExeption {
-        List<Order> orders = dataService.getAllOrders();
+        List<Order> orders = getAllOrders();
 
         if (orders == null) {
             return null;
@@ -85,14 +87,14 @@ public class AccountingFileService implements AccountingInterface, FileReaderInt
 
     @Override
     public void updateSalesOrderLines(Order salesOrder, List<OrderLine> newOrderLines) throws WrongDataPathExeption, IOException {
-        DataPath dataPath = dataService.getDataPath(salesOrder.getOrderSeries());
-        List<OrderLine> allOrderLines = dataService.getAllOrderLines(dataPath);
+        DataPath dataPath = getDataPath(salesOrder.getOrderSeries());
+        List<OrderLine> allOrderLines = getAllOrderLines(dataPath);
 
         if (allOrderLines == null) {
             throw new WrongDataPathExeption();
         }
 
-        int orderNumber = salesOrder.getOrderNumber();
+        long orderNumber = salesOrder.getOrderNumber();
 
         allOrderLines.stream()
                 .filter(orderLine -> orderLine.getOrderNumber() == orderNumber)
@@ -104,16 +106,16 @@ public class AccountingFileService implements AccountingInterface, FileReaderInt
                         })
                 );
 
-        dataService.rewriteOrderLines(allOrderLines);
+        rewriteOrderLines(allOrderLines);
     }
 
     @Override
     public Item getSoldItemByName(Order salesOrder, String itemName) throws WrongDataPathExeption {
-        DataPath dataPath = dataService.getDataPath(salesOrder.getOrderSeries());
-        List<OrderLine> salesOrderLines = dataService.getAllOrderLines(dataPath);
+        DataPath dataPath = getDataPath(salesOrder.getOrderSeries());
+        List<OrderLine> salesOrderLines = getAllOrderLines(dataPath);
 
         for (OrderLine salesOrderLine : salesOrderLines) {
-            Item soldItem = dataService.getWarehouseService().getItemById(salesOrderLine.getItemID());
+            Item soldItem = warehouseFileService.getItemById(salesOrderLine.getItemID());
             if (soldItem.getItemName().equals(itemName)) {
                 return soldItem;
             }
@@ -150,22 +152,22 @@ public class AccountingFileService implements AccountingInterface, FileReaderInt
     }
 
     @Override
-    public int getNewSalesDocumentNumber() throws IOException, WrongDataPathExeption {
+    public long getNewSalesDocumentNumber() throws IOException, WrongDataPathExeption {
         return getNewDocumentNumber(SALES_ORDER_NR_INFO.getIndex());
     }
 
     @Override
-    public int getNewReturnDocumentNumber() throws IOException, WrongDataPathExeption {
+    public long getNewReturnDocumentNumber() throws IOException, WrongDataPathExeption {
         return getNewDocumentNumber(RETURN_ORDER_NR_INFO.getIndex());
     }
 
     @Override
-    public int getNewPurchaseOrderNumber() throws WrongDataPathExeption, IOException {
+    public long getNewPurchaseOrderNumber() throws WrongDataPathExeption, IOException {
         return getNewDocumentNumber(PURCHASE_ORDER_NR_INFO.getIndex());
     }
 
-    private int getNewDocumentNumber(String path) throws IOException, WrongDataPathExeption {
-        int documentNr = dataService.getInfoFromDataString(path);
+    private long getNewDocumentNumber(String path) throws IOException, WrongDataPathExeption {
+        long documentNr = getInfoFromDataString(path);
 
         if (documentNr > 0) {
             return documentNr;
@@ -198,7 +200,7 @@ public class AccountingFileService implements AccountingInterface, FileReaderInt
             throw new WrongDataPathExeption();
         }
 
-        double currentBalance = dataService.getBalanceFromDataString(dataId.getIndex());
+        double currentBalance = getBalanceFromDataString(dataId.getIndex());
         double newBalance = currentBalance + amount;
 
         if (newBalance < 0) {
@@ -220,13 +222,13 @@ public class AccountingFileService implements AccountingInterface, FileReaderInt
 
     @Override
     public void updateSalesOrderStatus(Order order) throws IOException {
-        List<Order> salesOrders = dataService.getAllOrdersBySeries(SALE);
+        List<Order> salesOrders = getAllOrdersBySeries(SALE);
 
         salesOrders.stream()
                 .filter(order1 -> order1.getOrderNumber() == order.getOrderNumber())
                 .forEach(order1 -> order1.setPayment_received(true));
 
-        dataService.updateOrders(salesOrders);
+        updateOrders(salesOrders);
     }
 
     public void countIncomeAndExpensesByDays() throws WrongDataPathExeption, IOException {
@@ -284,7 +286,7 @@ public class AccountingFileService implements AccountingInterface, FileReaderInt
     }
 
     private double getCashOperationsByTypeAndMonth(CashOperation operation, int year, int month) {
-        List<CashRecord> allCashRecords = dataService.getAllCashRecords();
+        List<CashRecord> allCashRecords = getAllCashRecords();
         double cashSum = 0.0;
 //        if (allCashRecords == null) {
 //            return cashSum;
@@ -300,7 +302,7 @@ public class AccountingFileService implements AccountingInterface, FileReaderInt
     }
 
     private double getCashOperationsByTypeAndDay(CashOperation operation, LocalDate date) {
-        List<CashRecord> allCashRecords = dataService.getAllCashRecords();
+        List<CashRecord> allCashRecords = getAllCashRecords();
         double cashSum = 0.0;
 //        if (allCashRecords == null) {
 //            return cashSum;
@@ -314,7 +316,7 @@ public class AccountingFileService implements AccountingInterface, FileReaderInt
     }
 
     private List<CashRecord> getSalesRecordsForSeller(String sellerUsername) {
-        List<CashRecord> allRecords = dataService.getAllCashRecords();
+        List<CashRecord> allRecords = getAllCashRecords();
         List<CashRecord> salesCashRecords;
 
 //        if (allRecords == null) {
@@ -351,5 +353,344 @@ public class AccountingFileService implements AccountingInterface, FileReaderInt
     public double getTotalOrderAmount(List<OrderLine> orderLines) {
 
         return orderLines.stream().mapToDouble(OrderLine::getLineAmount).sum();
+    }
+
+    private ArrayList<CashRecord> getAllCashRecords() {
+        try {
+            Scanner scanner = new Scanner(new File(ALL_CASH_RECORDS_PATH.getPath()));
+            ArrayList<CashRecord> cashRecords = new ArrayList<>();
+
+            while (scanner.hasNext()) {
+                String id = scanner.nextLine();
+                String operationDate = scanner.nextLine();
+                String cashOperation = scanner.nextLine();
+                double amount = getAmount(scanner.nextLine());
+                String sellerUsername = scanner.nextLine();
+                scanner.nextLine();
+
+//                if (operationDate != null && cashOperation != null && amount != 0.0) {
+//                    cashRecords.add(new CashRecord(id, operationDate, amount, sellerUsername));
+//                }
+            }
+            return cashRecords;
+        } catch (FileNotFoundException e) {
+            return null;
+        }
+    }
+
+    @Override
+    public List<CashJournalEntry> getDailyReports() {
+        try {
+            Scanner scanner = new Scanner(new File(DAILY_CASH_JOURNALS_PATH.getPath()));
+            List<CashJournalEntry> dailyReports = new ArrayList<>();
+
+            while (scanner.hasNext()) {
+                long orderId = Long.parseLong(scanner.nextLine());
+                String localDate = scanner.nextLine();
+                double incomes = Double.parseDouble(scanner.nextLine());
+                double expenses = Double.parseDouble(scanner.nextLine());
+                double balance = Double.parseDouble(scanner.nextLine());
+                scanner.nextLine();
+
+                CashJournalEntry report = new CashJournalEntry(orderId, localDate, incomes, expenses, balance);
+                dailyReports.add(report);
+
+            }
+            return dailyReports;
+        } catch (FileNotFoundException e) {
+            return null;
+        }
+    }
+
+    double getAmount(String input) {
+        try {
+            return Double.parseDouble(input);
+        } catch (NumberFormatException e) {
+            return 0.0;
+        }
+    }
+
+    CashOperation getCashOperation(String input) {
+        try {
+            return CashOperation.valueOf(input);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    String getOperationDate(String input) {
+        try {
+            int year = Integer.parseInt(input.substring(0, 4));
+            int month = Integer.parseInt(input.substring(5, 7));
+            int day = Integer.parseInt(input.substring(8, 10));
+
+            return LocalDate.of(year, month, day).toString();
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    public void rewriteDailyBalance(List<CashRecord> cashRecords) {
+//        PrintWriter printWriter = new PrintWriter(new FileWriter(ALL_CASH_RECORDS_PATH.getPath()));
+//
+//        cashRecords.forEach(cashRecord -> {
+//            printWriter.println(cashRecord.getRecordID());
+//            printWriter.println(cashRecord.getDate());
+//            printWriter.println(cashRecord.getOperation());
+//            printWriter.printf("%.2f\n", cashRecord.getAmount());
+//            printWriter.println(cashRecord.getSellerId());
+//            printWriter.println();
+//        });
+//
+//        printWriter.close();
+    }
+
+    public void rewriteDailyReports(ArrayList<DailyReport> dailyReports) throws IOException {
+        PrintWriter printWriter = new PrintWriter(new FileWriter(String.valueOf(DAILY_CASH_JOURNALS_PATH)));
+
+        dailyReports.forEach(report -> {
+            printWriter.println(report.getDate());
+            printWriter.println(report.getDailyIncome());
+            printWriter.println(report.getDailyExpenses());
+            printWriter.println(report.getDailyBalance());
+            printWriter.println();
+        });
+
+        printWriter.close();
+    }
+
+    public List<OrderLine> getAllOrderLines(DataPath path) {
+        List<OrderLine> orderLines = new ArrayList<>();
+
+        try {
+            Scanner scanner = new Scanner(new File(path.getPath()));
+            while (scanner.hasNext()) {
+                String orderSeries = scanner.nextLine();
+                int id = Integer.parseInt(scanner.nextLine());
+                int lineNumber = Integer.parseInt(scanner.nextLine());
+                String itemName = scanner.nextLine();
+                int quantity = Integer.parseInt(scanner.nextLine());
+
+                scanner.nextLine();
+
+                Item item = warehouseFileService.getItemFromWarehouse(itemName);
+                double lineAmount = quantity * item.getSalePrice();
+                OrderLine orderLine = new OrderLine(orderSeries, id, lineNumber, item.getItemId(), quantity, lineAmount);
+
+                orderLines.add(orderLine);
+            }
+            return orderLines;
+        } catch (FileNotFoundException | NumberFormatException e) {
+            return null;
+        }
+    }
+
+    @Override
+    public List<OrderLine> getOrderLinesForOrder(Order order) throws WrongDataPathExeption {
+        List<OrderLine> allOrderLines = getAllOrderLines(getDataPath(order.getOrderSeries()));
+
+        return allOrderLines.stream()
+                .filter(orderLine -> orderLine.getOrderNumber() == order.getOrderNumber())
+                .collect(Collectors.toList());
+    }
+
+    public void rewriteOrderLines(List<OrderLine> orderLines) throws IOException, WrongDataPathExeption {
+        DataPath path = getDataPath(orderLines.get(0).getOrderSeries());
+
+        PrintWriter printWriter = new PrintWriter(new FileWriter(path.getPath()));
+
+        orderLines.forEach(orderLine -> writeOrderLineToFile(printWriter, orderLine));
+
+        printWriter.close();
+    }
+
+    private void writeOrderLineToFile(PrintWriter printWriter, OrderLine orderLine) {
+        printWriter.println(orderLine.getOrderSeries());
+        printWriter.println(orderLine.getOrderNumber());
+        printWriter.println(orderLine.getOrderLineNumber());
+        printWriter.println(orderLine.getItemID());
+        printWriter.println(orderLine.getLineQuantity());
+        printWriter.println(orderLine.getLineAmount());
+        printWriter.println();
+    }
+
+    public List<Order> getAllOrders() {
+        try {
+            Scanner scanner = new Scanner(new File(ALL_ORDERS_PATH.getPath()));
+            List<Order> allOrders = new ArrayList<>();
+
+            while (scanner.hasNext()) {
+                String orderSeries = scanner.nextLine();
+                int orderNumber = Integer.parseInt(scanner.nextLine());
+                String orderDate = scanner.nextLine();
+                String clientName = scanner.nextLine();
+                double amount = Double.parseDouble(scanner.nextLine());
+                String salesPerson = scanner.nextLine();
+                boolean payment_finished = Boolean.getBoolean(scanner.nextLine());
+
+                allOrders.add(new Order(orderSeries, orderNumber, orderDate, clientName, amount, salesPerson, payment_finished));
+            }
+
+            return allOrders;
+        } catch (FileNotFoundException e) {
+            return null;
+        }
+    }
+
+    public List<Order> getAllOrdersBySeries(OrderSeries series) {
+        List<Order> allOrders = getAllOrders();
+        List<Order> filteredOrders = new ArrayList<>();
+
+        for (Order order : allOrders) {
+            if (order.getOrderSeries().equals(series.getSeries())) {
+                filteredOrders.add(order);
+            }
+        }
+
+        return filteredOrders;
+    }
+
+    @Override
+    public void saveOrder(Order order, List<OrderLine> orderLines) throws WrongDataPathExeption, IOException {
+        saveNewOrder(order);
+        String series = order.getOrderSeries();
+        DataPath dataPath = getDataPath(series);
+        List<OrderLine> allOrderLines = getAllOrderLines(dataPath);
+
+        List<Long> orderItemsID = allOrderLines.stream()
+                .filter(orderLine -> orderLine.getOrderNumber() == order.getOrderNumber())
+                .map(OrderLine::getItemID).toList();
+
+        List<Item> orderItems = warehouseFileService.getItemsList(orderItemsID);
+
+        for (OrderLine orderLine : orderLines) {
+            saveOrderLine(dataPath, orderLine);
+        }
+
+        List<Item> itemsWithUpdatedQuantity = warehouseFileService.getItemsWithUpdatedQuantityList(orderItems);
+
+        warehouseFileService.saveWarehouseStock(itemsWithUpdatedQuantity);
+    }
+
+    public void updateOrders(List<Order> orders) throws IOException {
+        PrintWriter printWriter = new PrintWriter(new FileWriter(ALL_ORDERS_PATH.getPath()));
+
+        orders.forEach(order -> {
+            printWriter.println(order.getOrderSeries());
+            printWriter.println(order.getOrderNumber());
+            printWriter.println(order.getOrderDate());
+            printWriter.println(order.getClientName());
+            printWriter.println(order.getOrderAmount());
+            printWriter.println(order.getSalesperson());
+            printWriter.println(order.isPayment_received());
+        });
+    }
+
+    public double getBalanceFromDataString(String infoSection) throws WrongDataPathExeption {
+        ArrayList<String> dataList = reader.getDataStrings();
+
+        if (dataList == null) {
+            throw new WrongDataPathExeption();
+        }
+
+        double balance = 0.0;
+
+        for (String data : dataList) {
+            balance = getBalance(data, infoSection);
+            if (balance > 0.0) {
+                break;
+            }
+        }
+        return balance;
+    }
+
+    private int getOrderNr(ArrayList<String> dataList, String infoSection, String data) throws IOException {
+        if (data.startsWith(infoSection)) {
+            String purchaseOrderNumberString = data.substring(data.indexOf("-") + 1);
+            int newOrderNumber = Integer.parseInt(purchaseOrderNumberString);
+            int index = dataList.indexOf(data);
+            String newString = data.substring(0, data.indexOf("-") + 1) + ++newOrderNumber;
+            dataList.set(index, newString);
+            reader.updateDataStrings(dataList);
+            return newOrderNumber;
+        }
+        return 0;
+    }
+
+    private double getBalance(String data, String infoString) {
+        if (data.startsWith(infoString)) {
+            String purchaseOrderNumberString = data.substring(data.indexOf("=") + 1);
+            return Double.parseDouble(purchaseOrderNumberString);
+        }
+        return 0.0;
+    }
+
+
+    void updateDailySalesJournal() {
+        try {
+            LocalDate localDate = LocalDate.now();
+            LocalDate lastLoginDate = getLoginDate();
+            if (!lastLoginDate.equals(localDate)) {
+                countIncomeAndExpensesByDays();
+                adminFileService.updateCurrentDateInDataString(localDate);
+            }
+        } catch (WrongDataPathExeption | IOException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public LocalDate getLoginDate() throws WrongDataPathExeption {
+        ArrayList<String> datalist = reader.getDataStrings();
+
+        if (datalist == null) {
+            throw new WrongDataPathExeption();
+        }
+
+        return datalist.stream()
+                .filter(data -> data.startsWith(CURRENT_DATE.getIndex()))
+                .map(data -> data.substring(data.indexOf("-") + 1))
+                .findFirst()
+                .map(LocalDate::parse)
+                .orElse(null);
+    }
+
+    public DataPath getDataPath(String orderSeries) throws WrongDataPathExeption {
+        return switch (orderSeries) {
+            case "SF" -> SALES_ORDERS_LINES_PATH;
+            case "RE" -> RETURN_ORDERS_LINES_PATH;
+            case "PO" -> PURCHASE_ORDERS_LINES_PATH;
+            default -> throw new WrongDataPathExeption();
+        };
+    }
+
+    public int getInfoFromDataString(String infoSection) throws IOException, WrongDataPathExeption {
+        ArrayList<String> dataList = reader.getDataStrings();
+
+        if (dataList == null) {
+            throw new WrongDataPathExeption();
+        }
+
+        for (String data : dataList) {
+            int orderNr = getOrderNr(dataList, infoSection, data);
+            if (orderNr > 0) {
+                return orderNr;
+            }
+        }
+        return 0;
+    }
+
+    public void saveOrderLine(DataPath dataPath, OrderLine orderLine) throws IOException {
+        PrintWriter printWriter = new PrintWriter(new FileWriter(dataPath.getPath(), true));
+
+        writeOrderLineToFile(printWriter, orderLine);
+
+        printWriter.close();
+    }
+
+    private void saveNewOrder(Order newOrder) throws IOException {
+        List<Order> orders = getAllOrders();
+        orders.add(newOrder);
+
+        updateOrders(orders);
     }
 }

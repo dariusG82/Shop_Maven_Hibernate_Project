@@ -9,7 +9,7 @@ import javax.persistence.Table;
 public class CashJournalEntry {
 
     @Id
-    private int reportID;
+    private long reportID;
     private String reportDate;
     private double dailyIncome;
     private double dailyExpenses;
@@ -18,7 +18,7 @@ public class CashJournalEntry {
     public CashJournalEntry() {
     }
 
-    public CashJournalEntry(int reportID, String reportDate, double dailyIncome, double dailyExpenses, double dailyBalance) {
+    public CashJournalEntry(long reportID, String reportDate, double dailyIncome, double dailyExpenses, double dailyBalance) {
         this.reportID = reportID;
         this.reportDate = reportDate;
         this.dailyIncome = dailyIncome;
@@ -26,11 +26,11 @@ public class CashJournalEntry {
         this.dailyBalance = dailyBalance;
     }
 
-    public int getReportID() {
+    public long getReportID() {
         return reportID;
     }
 
-    public void setReportID(int reportID) {
+    public void setReportID(long reportID) {
         this.reportID = reportID;
     }
 

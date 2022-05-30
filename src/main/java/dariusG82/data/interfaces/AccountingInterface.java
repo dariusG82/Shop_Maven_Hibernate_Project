@@ -1,10 +1,12 @@
 package dariusG82.data.interfaces;
 
+import dariusG82.accounting.finance.CashJournalEntry;
 import dariusG82.accounting.finance.CashRecord;
 import dariusG82.accounting.orders.Order;
 import dariusG82.accounting.orders.OrderLine;
 import dariusG82.custom_exeptions.*;
 import dariusG82.services.file_services.DataFileIndex;
+import dariusG82.services.file_services.DataPath;
 import dariusG82.warehouse.Item;
 
 import java.io.FileNotFoundException;
@@ -15,6 +17,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public interface AccountingInterface {
+
+    List<OrderLine> getAllOrderLines(DataPath orderDataType) throws WrongDataPathExeption;
+
+    List<OrderLine> getOrderLinesForOrder(Order order) throws WrongDataPathExeption;
+
+    List<CashJournalEntry> getDailyReports();
 
     void updateSalesOrderLines(Order salesOrder, List<OrderLine> orderLines) throws WrongDataPathExeption, IOException;
 
@@ -30,10 +38,10 @@ public interface AccountingInterface {
 
     List<CashRecord> getDailySaleDocuments(LocalDate date, String series);
 
-    int getNewSalesDocumentNumber() throws IOException, WrongDataPathExeption;
-    int getNewReturnDocumentNumber() throws IOException, WrongDataPathExeption;
+    long getNewSalesDocumentNumber() throws IOException, WrongDataPathExeption;
+    long getNewReturnDocumentNumber() throws IOException, WrongDataPathExeption;
 
-    int getNewPurchaseOrderNumber() throws WrongDataPathExeption, IOException;
+    long getNewPurchaseOrderNumber() throws WrongDataPathExeption, IOException;
 
     List<CashRecord> getMonthlySalesReportBySeller(String username, LocalDate date);
 
@@ -59,4 +67,6 @@ public interface AccountingInterface {
 
         return monthlyRecords;
     }
+
+    void saveOrder(Order order, List<OrderLine> orderLines) throws WrongDataPathExeption, IOException;
 }

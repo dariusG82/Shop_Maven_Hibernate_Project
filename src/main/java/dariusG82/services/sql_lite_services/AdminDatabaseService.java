@@ -1,5 +1,6 @@
 package dariusG82.services.sql_lite_services;
 
+import dariusG82.custom_exeptions.UserNotFoundException;
 import dariusG82.data.interfaces.AdminInterface;
 import dariusG82.users.User;
 import dariusG82.users.UserType;
@@ -13,17 +14,10 @@ import java.util.List;
 
 public class AdminDatabaseService extends SQLService implements AdminInterface {
 
-    private final DataFromSQLiteService dataService;
-
-    public AdminDatabaseService(DataFromSQLiteService dataService) {
-        this.dataService = dataService;
-    }
-
     @Override
     public boolean isUsernameUnique(String username) {
-        List<User> users = dataService.getAllUsers();
 
-        return users.stream().noneMatch(user -> user.getUsername().equals(username));
+        return getUserByUsername(username) == null;
     }
 
     @Override
@@ -49,16 +43,42 @@ public class AdminDatabaseService extends SQLService implements AdminInterface {
 
         session.close();
     }
+    @Override
+    public List<User> getAllUsers() {
+        Session session = sessionFactory.openSession();
+
+        Query<User> userQuery = session.createQuery("select data from User data", User.class);
+        List<User> users = userQuery.getResultList();
+
+        session.close();
+
+        return users;
+    }
 
     @Override
-    public User getUserByType(String username, String password, UserType type) {
-        User user = getUserByUsername(username);
+    public User getUser(String username, String password, UserType type) throws UserNotFoundException {
+        Session session = sessionFactory.openSession();
 
-        if(user == null || !(user.getPassword().equals(password)) || !(user.getUserType().equals(type.toString()))){
-            return null;
+        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+        CriteriaQuery<User> criteriaQuery = criteriaBuilder.createQuery(User.class);
+        Root<User> root = criteriaQuery.from(User.class);
+        criteriaQuery.select(root).where(criteriaBuilder.and(
+                criteriaBuilder.equal(root.get("username"),username),
+                criteriaBuilder.equal(root.get("password"), password),
+                criteriaBuilder.equal(root.get("userType"), type.toString())
+        ));
+
+        Query<User> userQuery = session.createQuery(criteriaQuery);
+
+        User user = userQuery.getSingleResult();
+
+        session.close();
+
+        if(user != null){
+            return user;
+        } else {
+            throw new UserNotFoundException();
         }
-
-        return user;
     }
 
     @Override

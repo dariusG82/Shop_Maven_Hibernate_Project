@@ -1,4 +1,4 @@
-import dariusG82.accounting.DailyReport;
+import dariusG82.accounting.finance.CashJournalEntry;
 import dariusG82.accounting.finance.CashRecord;
 import dariusG82.accounting.orders.Order;
 import dariusG82.accounting.orders.OrderLine;
@@ -20,11 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import static dariusG82.accounting.finance.CashOperation.DAILY_EXPENSE;
-import static dariusG82.accounting.finance.CashOperation.DAILY_INCOME;
+import static dariusG82.accounting.finance.CashOperation.*;
 import static dariusG82.accounting.orders.OrderSeries.*;
-import static dariusG82.services.file_services.DataFileIndex.BANK_ACCOUNT;
-import static dariusG82.services.file_services.DataFileIndex.CASH_REGISTER;
+import static dariusG82.services.file_services.DataFileIndex.*;
 import static dariusG82.tools.Menu.*;
 
 public class Main {
@@ -94,7 +92,7 @@ public class Main {
         System.out.print("Enter your password: ");
         String password = scanner.nextLine();
 
-        return SERVICE.getAdminService().getUserByType(username, password, type);
+        return SERVICE.getAdminService().getUser(username, password, type);
     }
 
     private static void loginAsAccountant(User currentUser) {
@@ -162,7 +160,7 @@ public class Main {
     }
 
     private static void getDailySalesReturnsBalance() {
-        ArrayList<DailyReport> reports = SERVICE.getDailyReports();
+        List<CashJournalEntry> reports = SERVICE.getAccountingService().getDailyReports();
 
         if (reports == null) {
             System.out.println("There is no daily reports");
@@ -170,9 +168,9 @@ public class Main {
         }
         double totalBalance = 0.0;
         System.out.println("**********************");
-        for (DailyReport report : reports) {
+        for (CashJournalEntry report : reports) {
             System.out.printf("Date: %s || Daily income = %.2f, Daily expenses = %.2f, || Daily balance = %.2f\n",
-                    report.getDate(), report.getDailyIncome(), report.getDailyExpenses(), report.getDailyBalance());
+                    report.getReportDate(), report.getDailyIncome(), report.getDailyExpenses(), report.getDailyBalance());
             totalBalance += report.getDailyBalance();
         }
         System.out.println("**********************");
@@ -377,7 +375,7 @@ public class Main {
 
     private static void getAllClientsFromDatabase() {
         System.out.println("All clients List: ");
-        List<Client> clients = SERVICE.getAllClients();
+        List<Client> clients = SERVICE.getBusinessService().getAllClients();
 
         for (Client client : clients) {
             System.out.println("Client name: " + client.getClientName() + ", business ID = " + client.getClientID());
@@ -392,7 +390,7 @@ public class Main {
         System.out.print("Enter item price: ");
         double purchasePrice = Double.parseDouble(scanner.nextLine());
 
-        int itemId = SERVICE.getWarehouseService().getNewItemID();
+        long itemId = SERVICE.getWarehouseService().getNewItemID();
 
         Item item = new Item(itemId, itemName, itemDescription, purchasePrice);
 
@@ -442,7 +440,7 @@ public class Main {
             return;
         }
         try {
-            int salesOrderID = SERVICE.getAccountingService().getNewSalesDocumentNumber();
+            long salesOrderID = SERVICE.getAccountingService().getNewSalesDocumentNumber();
             Order newSalesOrder = createNewSalesOrder(currentUser, client, salesOrderID);
             List<OrderLine> orderLines = new ArrayList<>();
 
@@ -467,7 +465,7 @@ public class Main {
                     }
                     case 2 -> {
                         newSalesOrder.setOrderAmount(SERVICE.getAccountingService().getTotalOrderAmount(orderLines));
-                        SERVICE.saveOrder(newSalesOrder, orderLines);
+                        SERVICE.getAccountingService().saveOrder(newSalesOrder, orderLines);
                         System.out.printf("Total sales order cash amount = %.2f\n", newSalesOrder.getOrderAmount());
                         return;
                     }
@@ -577,7 +575,7 @@ public class Main {
             return;
         }
         try {
-            int returnOrderID = SERVICE.getAccountingService().getNewReturnDocumentNumber();
+            long returnOrderID = SERVICE.getAccountingService().getNewReturnDocumentNumber();
 
             Order newReturnOrder = createNewReturnOrder(currentUser, order, returnOrderID);
 
@@ -595,7 +593,7 @@ public class Main {
                             }
                             SERVICE.getAccountingService().updateSalesOrderLines(order, returnOrderLines);
                             newReturnOrder.setOrderAmount(SERVICE.getAccountingService().getTotalOrderAmount(returnOrderLines));
-                            SERVICE.saveOrder(newReturnOrder, returnOrderLines);
+                            SERVICE.getAccountingService().saveOrder(newReturnOrder, returnOrderLines);
                             makeCashReturnPayment(newReturnOrder);
                             System.out.printf("Total return order cash amount = %.2f\n", newReturnOrder.getOrderAmount());
                             return;
@@ -630,15 +628,10 @@ public class Main {
         }
         int quantity = getNewItemQuantity(returnedItem);
         double lineAmount = quantity * returnedItem.getSalePrice();
+        returnedItem.setStockQuantity(quantity);
 
-        return new OrderLine(
-                returnOrder.getOrderSeries(),
-                returnOrder.getOrderNumber(),
-                lineNumber,
-                returnedItem.getItemId(),
-                -quantity,
-                -lineAmount
-        );
+        return new OrderLine(returnOrder.getOrderSeries(), returnOrder.getOrderNumber(), lineNumber,
+                returnedItem.getItemId(), -quantity, -lineAmount);
     }
 
     private static void findDocumentByID(OrderSeries orderSeries) {
@@ -659,7 +652,7 @@ public class Main {
         System.out.printf("Order Nr: %s\n", order.getOrderSeries() + " " + order.getOrderNumber());
         List<OrderLine> orderLines;
         try {
-            orderLines = SERVICE.getOrderLinesForOrder(order);
+            orderLines = SERVICE.getAccountingService().getOrderLinesForOrder(order);
             for (OrderLine orderLine : orderLines) {
                 Item item = SERVICE.getWarehouseService().getItemById(orderLine.getItemID());
                 System.out.printf("Item: %s, quantity: %s, unitPrice: %.2f, total line amount %.2f\n",
@@ -674,11 +667,12 @@ public class Main {
         } catch (WrongDataPathExeption e) {
             System.out.println(e.getMessage());
         }
+
     }
 
     private static void createPurchaseOrderToWarehouse() {
         try {
-            int purchaseNr = SERVICE.getAccountingService().getNewPurchaseOrderNumber();
+            long purchaseNr = SERVICE.getAccountingService().getNewPurchaseOrderNumber();
             Order purchaseOrder = createNewPurchaseOrder(purchaseNr);
             List<OrderLine> purchaseOrderLines = new ArrayList<>();
 
@@ -699,7 +693,7 @@ public class Main {
                     case 2 -> {
                         System.out.printf("Total purchase order cash amount = %.2f\n", purchaseOrder.getOrderAmount());
                         SERVICE.getAccountingService().updateCashBalance(-purchaseOrder.getOrderAmount(), BANK_ACCOUNT);
-                        SERVICE.saveOrder(purchaseOrder, purchaseOrderLines);
+                        SERVICE.getAccountingService().saveOrder(purchaseOrder, purchaseOrderLines);
                         return;
                     }
                     default -> System.out.println("Wrong choice, choose again");
@@ -714,7 +708,7 @@ public class Main {
 
     }
 
-    private static Order createNewPurchaseOrder(int purchaseNr) {
+    private static Order createNewPurchaseOrder(long purchaseNr) {
         System.out.printf("Creating purchase order Nr.: %d\n", purchaseNr);
         System.out.println("***********************");
 
@@ -729,7 +723,7 @@ public class Main {
         return purchaseOrder;
     }
 
-    private static Order createNewSalesOrder(User currentUser, Client client, int salesOrderID) {
+    private static Order createNewSalesOrder(User currentUser, Client client, long salesOrderID) {
         System.out.printf("Creating sales order Nr.: %d\n", salesOrderID);
         System.out.println("***********************");
 
@@ -743,7 +737,7 @@ public class Main {
         return newOrder;
     }
 
-    private static Order createNewReturnOrder(User currentUser, Order order, int returnOrderID) {
+    private static Order createNewReturnOrder(User currentUser, Order order, long returnOrderID) {
         System.out.printf("Creating return order Nr.: %d\n", returnOrderID);
         System.out.println("***********************");
 
@@ -898,7 +892,7 @@ public class Main {
     }
 
     private static void printListOfUsers() {
-        List<User> users = SERVICE.getAllUsers();
+        List<User> users = SERVICE.getAdminService().getAllUsers();
         System.out.println("********************");
         for (User user : users) {
             System.out.printf("Username: %s, User: %s %s, User Role: %s\n",

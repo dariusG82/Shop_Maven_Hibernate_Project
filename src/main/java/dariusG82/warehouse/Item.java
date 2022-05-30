@@ -1,5 +1,6 @@
 package dariusG82.warehouse;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -11,14 +12,20 @@ import java.util.Random;
 public class Item {
 
     @Id
-    private int itemId;
+    @Column(name = "itemId")
+    public long itemId;
+    @Column(name = "itemName")
     private String itemName;
+    @Column(name = "itemDescription")
     private String itemDescription;
+    @Column(name = "purchasePrice")
     private double purchasePrice;
+    @Column(name = "salePrice")
     private double salePrice;
+    @Column(name = "stockQuantity")
     private int stockQuantity;
 
-    public Item(){
+    public Item() {
 
     }
 
@@ -30,7 +37,7 @@ public class Item {
         this.stockQuantity = 0;
     }
 
-    public Item(int itemId, String itemName, String itemDescription, double purchasePrice) {
+    public Item(long itemId, String itemName, String itemDescription, double purchasePrice) {
         this.itemId = itemId;
         this.itemName = itemName;
         this.itemDescription = itemDescription;
@@ -55,7 +62,7 @@ public class Item {
         this.stockQuantity = stockQuantity;
     }
 
-    public Item(int itemId, String itemName, String itemDescription, double purchasePrice, double salePrice, int stockQuantity) {
+    public Item(long itemId, String itemName, String itemDescription, double purchasePrice, double salePrice, int stockQuantity) {
         this.itemId = itemId;
         this.itemName = itemName;
         this.itemDescription = itemDescription;
@@ -69,15 +76,15 @@ public class Item {
         return Math.round((getPurchasePrice() * random.nextDouble(1.15, 1.6)) * 100.0) / 100.0;
     }
 
-    public void updateQuantity(int quantity){
+    public void updateQuantity(int quantity) {
         this.stockQuantity += quantity;
     }
 
-    public int getItemId() {
+    public long getItemId() {
         return itemId;
     }
 
-    public void setItemId(int itemId) {
+    public void setItemId(long itemId) {
         this.itemId = itemId;
     }
 

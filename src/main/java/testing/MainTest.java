@@ -1,12 +1,19 @@
 package testing;
 
-import java.time.LocalDate;
-
 public class MainTest {
 
     public static void main(String[] args) {
-        String date = "2022-05-01";
-        LocalDate localDate = LocalDate.parse(date);
-        System.out.println(localDate.getYear());
+
+
+    }
+
+    private static <T extends Number> long power(T value, int a){
+
+        long sum = 1;
+        for (int i = 0; i < a; i++){
+            sum *= value.longValue();
+        }
+
+        return sum;
     }
 }

@@ -13,7 +13,7 @@ public class Order implements Serializable {
     @Id
     private String orderSeries;
     @Id
-    private int orderNumber;
+    private long orderNumber;
     private String orderDate;
     private String clientName;
     private double orderAmount;
@@ -24,17 +24,17 @@ public class Order implements Serializable {
 
     }
 
-    public Order(int orderNumber) {
+    public Order(long orderNumber) {
         this.orderNumber = orderNumber;
         this.salesperson = "";
     }
 
-    public Order(int orderNumber, String salesperson) {
+    public Order(long orderNumber, String salesperson) {
         this.orderNumber = orderNumber;
         this.salesperson = salesperson;
     }
 
-    public Order(String orderSeries, int orderNumber, String orderDate, String clientName, double orderAmount, String salesperson, boolean payment_received) {
+    public Order(String orderSeries, long orderNumber, String orderDate, String clientName, double orderAmount, String salesperson, boolean payment_received) {
         this.orderSeries = orderSeries;
         this.orderNumber = orderNumber;
         this.orderDate = orderDate;
@@ -52,11 +52,11 @@ public class Order implements Serializable {
         this.orderSeries = orderSeries;
     }
 
-    public int getOrderNumber() {
+    public long getOrderNumber() {
         return orderNumber;
     }
 
-    public void setOrderNumber(int orderID) {
+    public void setOrderNumber(long orderID) {
         this.orderNumber = orderID;
     }
 

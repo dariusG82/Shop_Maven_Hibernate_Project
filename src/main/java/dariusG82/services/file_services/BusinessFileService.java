@@ -1,29 +1,21 @@
 package dariusG82.services.file_services;
 
-import dariusG82.data.interfaces.BusinessInterface;
 import dariusG82.custom_exeptions.ClientDoesNotExistExeption;
 import dariusG82.custom_exeptions.WrongDataPathExeption;
-
-import dariusG82.data.interfaces.DataManagement;
+import dariusG82.data.interfaces.BusinessInterface;
 import dariusG82.partners.Client;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 import static dariusG82.services.file_services.DataPath.CLIENT_PATH;
 
 public class BusinessFileService implements BusinessInterface {
 
-    private final DataManagement dataService;
-
-    public BusinessFileService(DataManagement dataService) {
-        this.dataService = dataService;
-    }
-
     public Client getClientByName(String name) throws ClientDoesNotExistExeption, WrongDataPathExeption {
-        List<Client> clients = dataService.getAllClients();
+        List<Client> clients = getAllClients();
 
         if (clients != null) {
             for (Client client : clients) {
@@ -39,9 +31,9 @@ public class BusinessFileService implements BusinessInterface {
 
     @Override
     public boolean isClientNameUnique(String clientName) throws WrongDataPathExeption {
-        List<Client> clients = dataService.getAllClients();
+        List<Client> clients = getAllClients();
 
-        if(clients == null){
+        if (clients == null) {
             throw new WrongDataPathExeption();
         }
 
@@ -50,7 +42,7 @@ public class BusinessFileService implements BusinessInterface {
 
     @Override
     public void addNewClientToDatabase(Client client) throws WrongDataPathExeption {
-        List<Client> clients = dataService.getAllClients();
+        List<Client> clients = getAllClients();
 
         if (clients != null) {
             clients.add(client);
@@ -62,7 +54,7 @@ public class BusinessFileService implements BusinessInterface {
 
     @Override
     public void deleteClientFromDatabase(Client clientToDelete) throws WrongDataPathExeption {
-        List<Client> clients = dataService.getAllClients();
+        List<Client> clients = getAllClients();
 
 
         if (clients != null) {
@@ -94,4 +86,26 @@ public class BusinessFileService implements BusinessInterface {
         }
     }
 
+    @Override
+    public List<Client> getAllClients() {
+        try {
+            Scanner scanner = new Scanner(new File(CLIENT_PATH.getPath()));
+            ArrayList<Client> allClients = new ArrayList<>();
+
+            while (scanner.hasNext()) {
+                String partnerName = scanner.nextLine();
+                String businessID = scanner.nextLine();
+                String streetAddress = scanner.nextLine();
+                String city = scanner.nextLine();
+                String country = scanner.nextLine();
+                scanner.nextLine();
+
+                allClients.add(new Client(partnerName, businessID, streetAddress, city, country));
+            }
+
+            return allClients;
+        } catch (FileNotFoundException e) {
+            return null;
+        }
+    }
 }
