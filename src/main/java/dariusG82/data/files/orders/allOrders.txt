@@ -1,0 +1,16 @@
+SF
+7
+2022-05-31
+MB Simutis
+11.08
+SauSau
+false
+
+RE
+2
+2022-05-31
+MB Simutis
+-2.77
+SauSau
+true
+

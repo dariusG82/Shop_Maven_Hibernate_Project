@@ -1,112 +1,42 @@
-SF 1
-MB Simutis
-Molbertas
-1
-29.63
-Saulius
-true
-
-SF 1
-MB Simutis
-Piesimo drobe
-20
-6.72
-Saulius
-true
-
-SF 2
-UAB "Zebru chebra"
-Molbertas
-3
-29.63
-Saulius
-true
-
-SF 2
-UAB "Zebru chebra"
-Teptukas
-5
-0.39
-Saulius
-true
-
-SF 2
-UAB "Zebru chebra"
-Piesimo drobe
-20
-6.72
-Saulius
-true
-
-SF 3
-UAB "Zebru chebra"
-Tusinukas
-40
-0.39
-Saulius
-true
-
-SF 4
-MB Simutis
-Tusinukas
-20
-0.39
-Saulius
-true
-
-SF 4
-MB Simutis
-Molbertas
+SF
 2
-29.63
-Saulius
-true
-
-SF 4
-MB Simutis
-Trintukas
+1
+1
 20
-0.11
-Saulius
-true
+55.4
 
-SF 4
-MB Simutis
-Tusinukas
-30
-0.39
-Saulius
-true
-
-SF 5
-MB Simutis
-Tusinukas
-5
-0.39
-Saulius
-true
-
-SF 5
-MB Simutis
-Trintukas
+SF
 3
-0.11
-Saulius
-true
+1
+1
+25
+69.25
 
-SF 6
-MB Simutis
-Tusinukas
-80
-0.39
-Saulius
-true
+SF
+4
+1
+1
+5
+13.85
 
-SF 7
-UAB "Zebru chebra"
-Tusinukas
-10
-0.39
-Saulius
-true
+SF
+5
+1
+1
+5
+13.85
+
+SF
+6
+1
+1
+1
+2.77
+
+SF
+7
+1
+1
+3
+8.31
 

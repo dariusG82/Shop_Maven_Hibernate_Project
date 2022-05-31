@@ -4,6 +4,7 @@ import dariusG82.accounting.orders.Order;
 import dariusG82.accounting.orders.OrderLine;
 import dariusG82.accounting.orders.OrderSeries;
 import dariusG82.custom_exeptions.WrongDataPathExeption;
+import dariusG82.data.interfaces.DataManagement;
 import dariusG82.data.interfaces.OrdersManagementInterface;
 import dariusG82.warehouse.Item;
 
@@ -15,22 +16,25 @@ import java.util.stream.Collectors;
 
 import static dariusG82.services.file_services.DataPath.*;
 
-public class OrderManagementFileService implements OrdersManagementInterface {
+public class OrderManagementFileService extends FileDataManager implements OrdersManagementInterface {
 
-    WarehouseFileService warehouseFileService = new WarehouseFileService();
+    DataManagement dataManagement;
 
+    public OrderManagementFileService(DataManagement dataManagement) {
+        this.dataManagement = dataManagement;
+    }
 
     @Override
     public Order getDocumentByID(String id) throws WrongDataPathExeption {
-        String documentSeries = id.substring(0, id.indexOf(" ") + 1);
-        String index = id.substring(id.indexOf(" ") + 1);
+        String documentSeries = id.substring(0, 2);
+        String index = id.substring(2);
         int orderNr = Integer.parseInt(index);
 
         switch (documentSeries) {
-            case "SF " -> {
+            case "SF" -> {
                 return getOrder(SALES_ORDERS_LINES_PATH, orderNr);
             }
-            case "RE " -> {
+            case "RE" -> {
                 return getOrder(RETURN_ORDERS_LINES_PATH, orderNr);
             }
             case "PO" -> {
@@ -44,7 +48,8 @@ public class OrderManagementFileService implements OrdersManagementInterface {
 
     @Override
     public List<OrderLine> getOrderLinesForOrder(Order order) throws WrongDataPathExeption {
-        List<OrderLine> allOrderLines = getAllOrderLines(getDataPath(order.getOrderSeries()));
+        List<OrderLine> allOrderLines;
+        allOrderLines = getAllOrderLines(getDataPath(order.getOrderSeries()));
 
         return allOrderLines.stream()
                 .filter(orderLine -> orderLine.getOrderNumber() == order.getOrderNumber())
@@ -58,16 +63,15 @@ public class OrderManagementFileService implements OrdersManagementInterface {
             Scanner scanner = new Scanner(new File(path.getPath()));
             while (scanner.hasNext()) {
                 String orderSeries = scanner.nextLine();
-                int id = Integer.parseInt(scanner.nextLine());
+                long orderNumber = Long.parseLong(scanner.nextLine());
                 int lineNumber = Integer.parseInt(scanner.nextLine());
-                String itemName = scanner.nextLine();
+                long itemID = Integer.parseInt(scanner.nextLine());
                 int quantity = Integer.parseInt(scanner.nextLine());
+                double lineAmount = Double.parseDouble(scanner.nextLine());
 
                 scanner.nextLine();
 
-                Item item = warehouseFileService.getItemFromWarehouse(itemName);
-                double lineAmount = quantity * item.getSalePrice();
-                OrderLine orderLine = new OrderLine(orderSeries, id, lineNumber, item.getItemId(), quantity, lineAmount);
+                OrderLine orderLine = new OrderLine(orderSeries, orderNumber, lineNumber, itemID, quantity, lineAmount);
 
                 orderLines.add(orderLine);
             }
@@ -83,7 +87,7 @@ public class OrderManagementFileService implements OrdersManagementInterface {
         List<OrderLine> salesOrderLines = getAllOrderLines(dataPath);
 
         for (OrderLine salesOrderLine : salesOrderLines) {
-            Item soldItem = warehouseFileService.getItemById(salesOrderLine.getItemID());
+            Item soldItem = dataManagement.getWarehouseService().getItemById(salesOrderLine.getItemID());
             if (soldItem.getItemName().equals(itemName)) {
                 return soldItem;
             }
@@ -102,15 +106,15 @@ public class OrderManagementFileService implements OrdersManagementInterface {
                 .filter(orderLine -> orderLine.getOrderNumber() == order.getOrderNumber())
                 .map(OrderLine::getItemID).toList();
 
-        List<Item> orderItems = warehouseFileService.getItemsList(orderItemsID);
+        List<Item> orderItems = getItemsList(orderItemsID);
 
         for (OrderLine orderLine : orderLines) {
             saveOrderLine(dataPath, orderLine);
         }
 
-        List<Item> itemsWithUpdatedQuantity = warehouseFileService.getItemsWithUpdatedQuantityList(orderItems);
+        List<Item> itemsWithUpdatedQuantity = getItemsWithUpdatedQuantityList(orderItems);
 
-        warehouseFileService.saveWarehouseStock(itemsWithUpdatedQuantity);
+        saveWarehouseStock(itemsWithUpdatedQuantity);
     }
 
     @Override
@@ -227,10 +231,38 @@ public class OrderManagementFileService implements OrdersManagementInterface {
         updateOrders(orders);
     }
 
+    protected List<Item> getItemsWithUpdatedQuantityList(List<Item> itemsToUpdate) {
+        List<Item> updatedList = new ArrayList<>();
+        List<Item> warehouseStock = dataManagement.getWarehouseService().getAllItems();
+
+        warehouseStock.forEach(stockItem -> {
+            itemsToUpdate.stream()
+                    .filter(stockItem::equals)
+                    .forEachOrdered(newItem -> {
+                        stockItem.updateQuantity(newItem.getStockQuantity());
+                        updatedList.add(stockItem);
+                    });
+            updatedList.add(stockItem);
+        });
+
+        return updatedList;
+    }
+
+    protected List<Item> getItemsList(List<Long> itemsIDs) {
+        List<Item> allItems = new ArrayList<>();
+
+        for (long id : itemsIDs) {
+            Item item = dataManagement.getWarehouseService().getItemById(id);
+            allItems.add(item);
+        }
+
+        return allItems;
+    }
+
     private void updateOrders(List<Order> orders) throws IOException {
         PrintWriter printWriter = new PrintWriter(new FileWriter(ALL_ORDERS_PATH.getPath()));
 
-        orders.forEach(order -> {
+        for (Order order : orders) {
             printWriter.println(order.getOrderSeries());
             printWriter.println(order.getOrderNumber());
             printWriter.println(order.getOrderDate());
@@ -238,7 +270,10 @@ public class OrderManagementFileService implements OrdersManagementInterface {
             printWriter.println(order.getOrderAmount());
             printWriter.println(order.getSalesperson());
             printWriter.println(order.isPayment_received());
-        });
+            printWriter.println();
+        }
+
+        printWriter.close();
     }
 
     private void rewriteOrderLines(List<OrderLine> orderLines) throws IOException, WrongDataPathExeption {

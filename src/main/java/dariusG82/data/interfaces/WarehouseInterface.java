@@ -14,8 +14,6 @@ public interface WarehouseInterface {
 
     void receiveGoods(long purchaseOrder) throws OrderDoesNotExistException, IOException, ItemIsNotInWarehouseExeption, WrongDataPathExeption;
 
-    Item getItemFromWarehouse(String itemName) throws ItemIsNotInWarehouseExeption;
-
     void updateWarehouseStock(OrderLine orderLine) throws IOException, ItemIsNotInWarehouseExeption;
 
     List<Item> getAllWarehouseItems();
@@ -27,6 +25,8 @@ public interface WarehouseInterface {
     long getNewItemID();
 
     void addNewItemCard(Item newItem) throws ItemIsAlreadyInDatabaseException, IOException;
+
+    void removeItemCard(Item item) throws IOException;
 
     List<Item> getAllItems();
 }

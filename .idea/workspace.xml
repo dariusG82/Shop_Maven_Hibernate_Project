@@ -4,24 +4,30 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7b3737be-bb88-4701-8de6-70c69d9cb0ca" name="Changes" comment="Updated DB services - next Stop File Reader services">
-      <change afterPath="$PROJECT_DIR$/src/main/java/dariusG82/data/interfaces/OrdersManagementInterface.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/dariusG82/services/file_services/OrderManagementFileService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/dariusG82/services/sql_lite_services/OrderManagementSQLiteService.java" afterDir="false" />
+    <list default="true" id="7b3737be-bb88-4701-8de6-70c69d9cb0ca" name="Changes" comment="Refactored services code - Accounting Service -&gt; divided into Accounting and OrderManagement Services">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/accounting/DailyReport.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/accounting/DailyReport.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/accounting/finance/CashRecord.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/accounting/finance/CashRecord.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/data/interfaces/AccountingInterface.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/data/interfaces/AccountingInterface.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/data/interfaces/DataManagement.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/data/interfaces/DataManagement.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/accounting/finance/CashJournalEntry.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/accounting/finance/CashJournalEntry.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/accounting/orders/OrderLine.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/accounting/orders/OrderLine.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/data/bussines.db" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/data/bussines.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/data/files/data/allCashRecords.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/data/files/data/allCashRecords.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/data/files/data/dailyCashJournals.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/data/files/data/dailyCashJournals.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/data/files/data/systemData.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/data/files/data/systemData.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/data/files/data/warehouse.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/data/files/data/warehouse.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/data/files/orders/allOrders.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/data/files/orders/allOrders.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/data/files/orders/purchaseOrderList.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/data/files/orders/purchaseOrderList.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/data/files/orders/returnOrderList" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/data/files/orders/returnOrderList" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/data/files/orders/salesOrderList.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/data/files/orders/salesOrderList.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/data/interfaces/FileReaderInterface.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/services/file_services/FileDataManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/data/interfaces/OrdersManagementInterface.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/data/interfaces/OrdersManagementInterface.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/data/interfaces/WarehouseInterface.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/data/interfaces/WarehouseInterface.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/services/file_services/AccountingFileService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/services/file_services/AccountingFileService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/services/file_services/AdminFileService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/services/file_services/AdminFileService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/services/file_services/BusinessFileService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/services/file_services/BusinessFileService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/services/file_services/DataFromFileService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/services/file_services/DataFromFileService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/services/file_services/OrderManagementFileService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/services/file_services/OrderManagementFileService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/services/file_services/WarehouseFileService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/services/file_services/WarehouseFileService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/services/sql_lite_services/AccountingDatabaseService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/services/sql_lite_services/AccountingDatabaseService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/services/sql_lite_services/DataFromSQLiteService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/services/sql_lite_services/DataFromSQLiteService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/services/sql_lite_services/BusinessDatabaseService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/services/sql_lite_services/BusinessDatabaseService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/services/sql_lite_services/WarehouseDatabaseService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/services/sql_lite_services/WarehouseDatabaseService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -154,7 +160,7 @@
       <workItem from="1653851308272" duration="946000" />
       <workItem from="1653924439004" duration="19932000" />
       <workItem from="1653947112202" duration="132000" />
-      <workItem from="1654008803953" duration="8053000" />
+      <workItem from="1654008803953" duration="18523000" />
     </task>
     <task id="LOCAL−00001" summary="Near Finish project">
       <created>1653851471817</created>
@@ -168,7 +174,13 @@
       <option name="presentableId" value="LOCAL−00002" />
       <updated>1653947219278</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL−00003" summary="Refactored services code - Accounting Service -&gt; divided into Accounting and OrderManagement Services">
+      <created>1654017965903</created>
+      <option name="number" value="LOCAL−00003" />
+      <option name="presentableId" value="LOCAL−00003" />
+      <updated>1654017965903</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -201,6 +213,32 @@
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="Near Finish project" />
     <MESSAGE value="Updated DB services - next Stop File Reader services" />
-    <option name="LAST_COMMIT_MESSAGE" value="Updated DB services - next Stop File Reader services" />
+    <MESSAGE value="Refactored services code - Accounting Service -&gt; divided into Accounting and OrderManagement Services" />
+    <option name="LAST_COMMIT_MESSAGE" value="Refactored services code - Accounting Service -&gt; divided into Accounting and OrderManagement Services" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <breakpoint enabled="true" type="java-exception">
+          <properties class="java.lang.StackOverflowError" package="java.lang" />
+          <option name="timeStamp" value="3" />
+        </breakpoint>
+        <line-breakpoint enabled="true" type="java-method">
+          <url>file://$PROJECT_DIR$/src/main/java/dariusG82/services/sql_lite_services/AccountingDatabaseService.java</url>
+          <line>226</line>
+          <properties class="dariusG82.services.sql_lite_services.AccountingDatabaseService" method="createAndSaveNewCashJournalEntries">
+            <option name="EMULATED" value="true" />
+            <option name="WATCH_EXIT" value="false" />
+          </properties>
+          <option name="timeStamp" value="13" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+    <watches-manager>
+      <configuration name="Application">
+        <watch expression="orderLine" />
+        <watch expression="newSalesOrder" />
+      </configuration>
+    </watches-manager>
   </component>
 </project>

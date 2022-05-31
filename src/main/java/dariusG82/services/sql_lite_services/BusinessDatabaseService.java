@@ -5,6 +5,7 @@ import dariusG82.partners.Client;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 
+import javax.persistence.NoResultException;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
@@ -62,10 +63,13 @@ public class BusinessDatabaseService extends SQLService implements BusinessInter
         criteriaQuery.select(root).where(criteriaBuilder.equal(root.get("clientName"), businessName));
         Query<Client> clientQuery = session.createQuery(criteriaQuery);
 
-        Client client = clientQuery.getSingleResult();
-
-        session.close();
-
-        return client;
+        try {
+            Client client = clientQuery.getSingleResult();
+            session.close();
+            return client;
+        } catch (NoResultException e){
+            session.close();
+            return null;
+        }
     }
 }

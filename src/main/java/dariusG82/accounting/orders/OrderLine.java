@@ -16,7 +16,7 @@ public class OrderLine implements Serializable {
     private long orderNumber;
     @Id
     private int orderLineNumber;
-    @Column(name = "itemId", insertable = false, updatable = false)
+    @Column(name = "itemId")
     private long itemNr;
     private int lineQuantity;
 

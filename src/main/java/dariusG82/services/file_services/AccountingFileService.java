@@ -9,7 +9,6 @@ import dariusG82.accounting.orders.OrderSeries;
 import dariusG82.custom_exeptions.NegativeBalanceException;
 import dariusG82.custom_exeptions.WrongDataPathExeption;
 import dariusG82.data.interfaces.AccountingInterface;
-import dariusG82.data.interfaces.FileReaderInterface;
 
 import java.io.*;
 import java.time.LocalDate;
@@ -23,7 +22,7 @@ import static dariusG82.accounting.orders.OrderSeries.SALE;
 import static dariusG82.services.file_services.DataFileIndex.*;
 import static dariusG82.services.file_services.DataPath.*;
 
-public class AccountingFileService implements AccountingInterface, FileReaderInterface {
+public class AccountingFileService extends FileDataManager implements AccountingInterface {
 
     AdminFileService adminFileService = new AdminFileService();
 
@@ -185,6 +184,10 @@ public class AccountingFileService implements AccountingInterface, FileReaderInt
 
         if (cashRecords == null) {
             throw new WrongDataPathExeption();
+        }
+
+        if(cashRecords.size() < 1){
+            return;
         }
 
         CashRecord record = cashRecords.get(0);

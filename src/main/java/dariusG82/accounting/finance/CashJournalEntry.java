@@ -75,6 +75,6 @@ public class CashJournalEntry {
     }
 
     public void updateBalance(){
-        this.dailyBalance = getDailyIncome() - getDailyBalance();
+        this.dailyBalance = getDailyIncome() - getDailyExpenses();
     }
 }

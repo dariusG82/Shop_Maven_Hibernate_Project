@@ -99,7 +99,7 @@ public class Main {
         System.out.printf("Welcome, %s %s!\n", currentUser.getName(), currentUser.getSurname());
         while (true) {
             printAccountantMenu();
-            switch (getChoiceFromScanner(2)) {
+            switch (getChoiceFromScanner(3)) {
                 case 1 -> startFinancialOperations();
                 case 2 -> startClientsOperations();
                 case 3 -> startItemOperations();
@@ -132,7 +132,7 @@ public class Main {
     private static void startClientsOperations() {
         while (true) {
             printClientsServiceMenu();
-            switch (getChoiceFromScanner(3)) {
+            switch (getChoiceFromScanner(4)) {
                 case 1 -> addNewClient();
                 case 2 -> getClientIDByClientName();
                 case 3 -> deleteClient();
@@ -229,8 +229,8 @@ public class Main {
                 System.out.printf("Sales documents for %s day is:\n", date);
                 System.out.println("*******************");
                 for (CashRecord cashRecord : salesForDay) {
-                    System.out.printf("Sales document id: %s, amount = %.2f\n",
-                            cashRecord.getRecordID(), cashRecord.getAmount());
+                    System.out.printf("Sales document id: %s %d, amount = %.2f\n",
+                            cashRecord.getOrderSeries(), cashRecord.getOrderNumber(), cashRecord.getAmount());
                     System.out.println("*******************");
                 }
                 return;
@@ -375,11 +375,14 @@ public class Main {
 
     private static void getAllClientsFromDatabase() {
         System.out.println("All clients List: ");
+        System.out.println("**********************");
         List<Client> clients = SERVICE.getBusinessService().getAllClients();
 
         for (Client client : clients) {
             System.out.println("Client name: " + client.getClientName() + ", business ID = " + client.getClientID());
         }
+
+        System.out.println("**********************");
     }
 
     private static void addNewItemCard() {
@@ -405,7 +408,23 @@ public class Main {
     }
 
     private static void removeItemCard() {
-        // TODO implement function
+        System.out.print("Enter item name for removal: ");
+        String itemName = scanner.nextLine();
+
+        Item itemForRemoval = SERVICE.getWarehouseService().getItemByName(itemName);
+
+        if(itemForRemoval == null){
+            System.out.printf("Item %s doesn't exist in database\n", itemName);
+        } else if(itemForRemoval.getStockQuantity() > 0){
+            System.out.printf("Cannot remove itemCard: %s quantity in warehouse is not 0\n", itemName);
+        } else {
+            try {
+                SERVICE.getWarehouseService().removeItemCard(itemForRemoval);
+                System.out.printf("%s itemCard successfully removed\n", itemName);
+            } catch (IOException e) {
+                System.out.println("File Reader ERROR");
+            }
+        }
     }
 
     private static void loginAsSalesman(User currentUser) {
@@ -507,6 +526,9 @@ public class Main {
     private static Order getOrderForPayment() {
         System.out.println("Enter document Nr. for which you want to make payment");
         Order order = getDocumentFromAccounting(SALE.getSeries());
+        if(order == null){
+            return null;
+        }
 
         try {
             if (SERVICE.getAccountingService().isOrderReceivedPayment(order)) {
@@ -618,7 +640,8 @@ public class Main {
             returnedItem = SERVICE.getOrderManagement().getSoldItemByName(salesOrder, itemName);
         } catch (SQLException e) {
             System.out.println("Database ERROR");
-        } catch (WrongDataPathExeption | FileNotFoundException | ItemIsNotInOrderException e) {
+        } catch (WrongDataPathExeption | FileNotFoundException | ItemIsNotInOrderException |
+                 ItemIsNotInWarehouseExeption e) {
             System.out.println(e.getMessage());
         }
 
@@ -700,9 +723,7 @@ public class Main {
                 }
                 orderLineNumber++;
             }
-        } catch (IOException |
-                 WrongDataPathExeption |
-                 NegativeBalanceException e) {
+        } catch (IOException | WrongDataPathExeption | NegativeBalanceException | ItemIsNotInWarehouseExeption e) {
             System.out.println(e.getMessage());
         }
 
@@ -816,6 +837,11 @@ public class Main {
         System.out.println("Enter sales/return document number: ");
         String requestedID = scanner.nextLine();
 
+        if(requestedID.length() < 3){
+            System.out.println("Wrong order number format");
+            return null;
+        }
+
         if (requestedID.substring(0, 2).equals(orderSeries)) {
             try {
                 return SERVICE.getOrderManagement().getDocumentByID(requestedID);
@@ -839,7 +865,7 @@ public class Main {
                     order.getOrderNumber(),
                     order.getOrderSeries(),
                     order.getSalesperson());
-            SERVICE.getAccountingService().updateCashBalance(-returnAmount, BANK_ACCOUNT);
+            SERVICE.getAccountingService().updateCashBalance(returnAmount, BANK_ACCOUNT);
             SERVICE.getAccountingService().addNewCashRecord(record);
 
         } catch (WrongDataPathExeption | NegativeBalanceException e) {

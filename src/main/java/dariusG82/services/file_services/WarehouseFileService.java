@@ -4,23 +4,26 @@ import dariusG82.accounting.orders.OrderLine;
 import dariusG82.custom_exeptions.ItemIsAlreadyInDatabaseException;
 import dariusG82.custom_exeptions.ItemIsNotInWarehouseExeption;
 import dariusG82.custom_exeptions.OrderDoesNotExistException;
-import dariusG82.data.interfaces.FileReaderInterface;
+import dariusG82.data.interfaces.DataManagement;
 import dariusG82.data.interfaces.WarehouseInterface;
 import dariusG82.warehouse.Item;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
 import static dariusG82.services.file_services.DataPath.PURCHASE_ORDERS_LINES_PATH;
 import static dariusG82.services.file_services.DataPath.WAREHOUSE_DATA_PATH;
 
-public class WarehouseFileService implements WarehouseInterface, FileReaderInterface {
+public class WarehouseFileService extends FileDataManager implements WarehouseInterface {
 
-    OrderManagementFileService orderManagementFileService = new OrderManagementFileService();
+    OrderManagementFileService orderManagementFileService;
+
+    public WarehouseFileService(DataManagement dataManagement) {
+        this.orderManagementFileService = (OrderManagementFileService) dataManagement.getOrderManagement();
+    }
 
     @Override
     public long getNewItemID() {
@@ -36,6 +39,10 @@ public class WarehouseFileService implements WarehouseInterface, FileReaderInter
     public Item getItemByName(String itemName) {
         List<Item> allItems = getAllItems();
 
+        if(allItems == null){
+            return null;
+        }
+
         return allItems.stream()
                 .filter(item -> item.getItemName().equals(itemName))
                 .findFirst()
@@ -46,6 +53,10 @@ public class WarehouseFileService implements WarehouseInterface, FileReaderInter
     public Item getItemById(long id) {
         List<Item> allItems = getAllItems();
 
+        if(allItems == null){
+            return null;
+        }
+
         return allItems.stream()
                 .filter(item -> item.getItemId() == id)
                 .findFirst()
@@ -53,26 +64,12 @@ public class WarehouseFileService implements WarehouseInterface, FileReaderInter
     }
 
     @Override
-    public Item getItemFromWarehouse(String itemName) {
-        List<Item> allItems = getAllItems();
-
-        if (allItems == null) {
-            return null;
-        }
-
-        try {
-            return allItems.stream()
-                    .filter(item -> item.getItemName().equals(itemName))
-                    .findFirst()
-                    .orElseThrow();
-        } catch (NoSuchElementException e) {
-            return null;
-        }
-    }
-
-    @Override
     public List<Item> getAllWarehouseItems() {
         List<Item> allItems = getAllItems();
+
+        if(allItems == null){
+            return null;
+        }
 
         return allItems.stream()
                 .filter(item -> item.getStockQuantity() > 0)
@@ -82,6 +79,10 @@ public class WarehouseFileService implements WarehouseInterface, FileReaderInter
     @Override
     public void addNewItemCard(Item newItem) throws ItemIsAlreadyInDatabaseException, IOException {
         List<Item> allItems = getAllItems();
+
+        if(allItems == null){
+            allItems = new ArrayList<>();
+        }
 
         for (Item item : allItems) {
             if (item.getItemName().equals(newItem.getItemName())) {
@@ -150,6 +151,7 @@ public class WarehouseFileService implements WarehouseInterface, FileReaderInter
                 double purchasePrice = Double.parseDouble(scanner.nextLine());
                 double salePrice = Double.parseDouble(scanner.nextLine());
                 int quantity = Integer.parseInt(scanner.nextLine());
+                scanner.nextLine();
 
                 items.add(new Item(itemId, itemName, description, purchasePrice, salePrice, quantity));
             }
@@ -160,47 +162,12 @@ public class WarehouseFileService implements WarehouseInterface, FileReaderInter
         }
     }
 
-    protected void saveWarehouseStock(List<Item> items) throws IOException {
-        PrintWriter printWriter = new PrintWriter(new FileWriter(WAREHOUSE_DATA_PATH.getPath()));
-
-        items.forEach(item -> {
-            printWriter.println(item.getItemId());
-            printWriter.println(item.getItemName());
-            printWriter.println(item.getItemDescription());
-            printWriter.println(item.getPurchasePrice());
-            printWriter.println(item.getSalePrice());
-            printWriter.println(item.getStockQuantity());
-            printWriter.println();
-        });
-
-        printWriter.close();
-    }
-
-    protected List<Item> getItemsWithUpdatedQuantityList(List<Item> itemsToUpdate) {
-        List<Item> updatedList = new ArrayList<>();
-        List<Item> warehouseStock = getAllItems();
-
-        warehouseStock.forEach(stockItem -> {
-            itemsToUpdate.stream()
-                    .filter(stockItem::equals)
-                    .forEachOrdered(newItem -> {
-                        stockItem.updateQuantity(newItem.getStockQuantity());
-                        updatedList.add(stockItem);
-                    });
-            updatedList.add(stockItem);
-        });
-
-        return updatedList;
-    }
-
-    protected List<Item> getItemsList(List<Long> itemsIDs) {
-        List<Item> allItems = new ArrayList<>();
-
-        for (long id : itemsIDs) {
-            Item item = getItemById(id);
-            allItems.add(item);
-        }
-
-        return allItems;
+    @Override
+    public void removeItemCard(Item itemForRemoval) throws IOException {
+        List<Item> allItems = getAllItems();
+        List<Item> updatedItemList = allItems.stream()
+                .filter(item -> !item.getItemName().equals(itemForRemoval.getItemName()))
+                .toList();
+        saveWarehouseStock(updatedItemList);
     }
 }

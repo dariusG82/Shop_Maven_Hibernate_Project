@@ -2,12 +2,12 @@ package dariusG82.services.sql_lite_services;
 
 import dariusG82.accounting.orders.OrderLine;
 import dariusG82.custom_exeptions.ItemIsAlreadyInDatabaseException;
-import dariusG82.custom_exeptions.ItemIsNotInWarehouseExeption;
 import dariusG82.data.interfaces.WarehouseInterface;
 import dariusG82.warehouse.Item;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 
+import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -36,17 +36,6 @@ public class WarehouseDatabaseService extends SQLService implements WarehouseInt
         session.close();
 
         orderLines.forEach(this::updateWarehouseStock);
-    }
-
-    @Override
-    public Item getItemFromWarehouse(String itemName) throws ItemIsNotInWarehouseExeption {
-        Item item = getItemByName(itemName);
-
-        if(item == null){
-            throw new ItemIsNotInWarehouseExeption();
-        }
-
-        return item;
     }
 
     @Override
@@ -107,12 +96,12 @@ public class WarehouseDatabaseService extends SQLService implements WarehouseInt
         Root<Item> root = criteriaQuery.from(Item.class);
 
         criteriaQuery.select(root).where(criteriaBuilder.equal(root.get("itemName"), itemName));
-        Query<Item> itemQuery = session.createQuery(criteriaQuery);
-        Item item = itemQuery.getSingleResult();
+        Item item = getItem(session, criteriaQuery);
 
         session.close();
 
         return item;
+
     }
 
     @Override
@@ -124,12 +113,21 @@ public class WarehouseDatabaseService extends SQLService implements WarehouseInt
         Root<Item> root = criteriaQuery.from(Item.class);
 
         criteriaQuery.select(root).where(criteriaBuilder.equal(root.get("itemId"), id));
-        Query<Item> itemQuery = session.createQuery(criteriaQuery);
-        Item item = itemQuery.getSingleResult();
+        Item item = getItem(session, criteriaQuery);
 
         session.close();
 
         return item;
+    }
+
+    private Item getItem(Session session, CriteriaQuery<Item> criteriaQuery) {
+        Query<Item> itemQuery = session.createQuery(criteriaQuery);
+
+        try {
+            return itemQuery.getSingleResult();
+        } catch (NoResultException e){
+            return null;
+        }
     }
 
     @Override
@@ -167,5 +165,14 @@ public class WarehouseDatabaseService extends SQLService implements WarehouseInt
         }
     }
 
+    @Override
+    public void removeItemCard(Item item) {
+        Session session = sessionFactory.openSession();
 
+        session.beginTransaction();
+        session.delete(item);
+        session.getTransaction().commit();
+
+        session.close();
+    }
 }

@@ -61,7 +61,16 @@ public class AccountingDatabaseService extends SQLService implements AccountingI
 
         session.close();
 
-        return records.stream().mapToDouble(CashRecord::getAmount).sum();
+        double totalIncome = 0.0;
+        double totalExpense = 0.0;
+        for (CashRecord record : records){
+            switch (record.getOrderSeries()){
+                case "RE", "PO" -> totalExpense += record.getAmount();
+                case "SF" -> totalIncome += record.getAmount();
+            }
+        }
+
+        return totalIncome - totalExpense;
     }
 
     @Override
@@ -202,6 +211,11 @@ public class AccountingDatabaseService extends SQLService implements AccountingI
 
     private void updateCashJournal(LocalDate date) {
         List<CashJournalEntry> entryList = getAllCashJournalEntries();
+
+        if(entryList.size() == 0){
+            createAndSaveNewCashJournalEntries(LocalDate.of(2000,1,1));
+            return;
+        }
 
         LocalDate lastDate = LocalDate.parse(entryList.get(entryList.size() - 1).getReportDate());
 

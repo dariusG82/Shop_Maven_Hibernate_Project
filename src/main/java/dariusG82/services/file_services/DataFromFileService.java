@@ -2,14 +2,13 @@ package dariusG82.services.file_services;
 
 import dariusG82.data.interfaces.*;
 
-public class DataFromFileService implements DataManagement, FileReaderInterface {
+public class DataFromFileService implements DataManagement {
 
     private final AdminFileService adminService = new AdminFileService();
     private final AccountingFileService accountingService = new AccountingFileService();
     private final BusinessFileService businessService = new BusinessFileService();
-
-    private final OrderManagementFileService orderManagementFileService = new OrderManagementFileService();
-    private final WarehouseFileService warehouseService = new WarehouseFileService();
+    private final OrderManagementFileService orderManagementFileService = new OrderManagementFileService(this);
+    private final WarehouseFileService warehouseService = new WarehouseFileService(this);
 
     public DataFromFileService() {
         getAccountingService().updateDailySalesJournal();

@@ -2,10 +2,7 @@ package dariusG82.data.interfaces;
 
 import dariusG82.accounting.orders.Order;
 import dariusG82.accounting.orders.OrderLine;
-import dariusG82.custom_exeptions.ClientDoesNotExistExeption;
-import dariusG82.custom_exeptions.ItemIsNotInOrderException;
-import dariusG82.custom_exeptions.OrderDoesNotExistException;
-import dariusG82.custom_exeptions.WrongDataPathExeption;
+import dariusG82.custom_exeptions.*;
 import dariusG82.services.file_services.DataPath;
 import dariusG82.warehouse.Item;
 
@@ -20,11 +17,11 @@ public interface OrdersManagementInterface {
 
     List<OrderLine> getOrderLinesForOrder(Order order) throws WrongDataPathExeption;
 
-    List<OrderLine> getAllOrderLines(DataPath orderDataType) throws WrongDataPathExeption;
+    List<OrderLine> getAllOrderLines(DataPath orderDataType) throws WrongDataPathExeption, ItemIsNotInWarehouseExeption;
 
-    Item getSoldItemByName(Order salesOrder, String itemName) throws SQLException, WrongDataPathExeption, FileNotFoundException, ItemIsNotInOrderException;
+    Item getSoldItemByName(Order salesOrder, String itemName) throws SQLException, WrongDataPathExeption, FileNotFoundException, ItemIsNotInOrderException, ItemIsNotInWarehouseExeption;
 
-    void saveOrder(Order order, List<OrderLine> orderLines) throws WrongDataPathExeption, IOException;
+    void saveOrder(Order order, List<OrderLine> orderLines) throws WrongDataPathExeption, IOException, ItemIsNotInWarehouseExeption;
 
     void updateSalesOrderLines(Order salesOrder, List<OrderLine> orderLines) throws WrongDataPathExeption, IOException;
 

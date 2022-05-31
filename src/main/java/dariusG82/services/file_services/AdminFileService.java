@@ -3,7 +3,6 @@ package dariusG82.services.file_services;
 import dariusG82.custom_exeptions.UserNotFoundException;
 import dariusG82.custom_exeptions.WrongDataPathExeption;
 import dariusG82.data.interfaces.AdminInterface;
-import dariusG82.data.interfaces.FileReaderInterface;
 import dariusG82.users.User;
 import dariusG82.users.UserType;
 
@@ -16,7 +15,7 @@ import java.util.Scanner;
 import static dariusG82.services.file_services.DataFileIndex.CURRENT_DATE;
 import static dariusG82.services.file_services.DataPath.USERS_DATA_PATH;
 
-public class AdminFileService implements AdminInterface, FileReaderInterface {
+public class AdminFileService extends FileDataManager implements AdminInterface {
 
     @Override
     public boolean isUsernameUnique(String username) {
