@@ -7,6 +7,7 @@ public class DataFromSQLiteService extends SQLService implements DataManagement 
     private final AdminDatabaseService adminDatabaseService = new AdminDatabaseService();
     private final BusinessDatabaseService businessDatabaseService = new BusinessDatabaseService();
     private final WarehouseDatabaseService warehouseDatabaseService = new WarehouseDatabaseService();
+    private final OrderManagementSQLiteService orderManagementSQLiteService = new OrderManagementSQLiteService();
     private final AccountingDatabaseService accountingDatabaseService = new AccountingDatabaseService();
 
     @Override
@@ -25,9 +26,12 @@ public class DataFromSQLiteService extends SQLService implements DataManagement 
     }
 
     @Override
+    public OrdersManagementInterface getOrderManagement() {
+        return orderManagementSQLiteService;
+    }
+
+    @Override
     public WarehouseInterface getWarehouseService() {
         return warehouseDatabaseService;
     }
-
-
 }

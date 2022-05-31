@@ -14,6 +14,18 @@ import static dariusG82.services.file_services.DataPath.CLIENT_PATH;
 
 public class BusinessFileService implements BusinessInterface {
 
+    @Override
+    public boolean isClientNameUnique(String clientName) throws WrongDataPathExeption {
+        List<Client> clients = getAllClients();
+
+        if (clients == null) {
+            throw new WrongDataPathExeption();
+        }
+
+        return clients.stream().noneMatch(client -> client.getClientName().equals(clientName));
+    }
+
+    @Override
     public Client getClientByName(String name) throws ClientDoesNotExistExeption, WrongDataPathExeption {
         List<Client> clients = getAllClients();
 
@@ -27,63 +39,6 @@ public class BusinessFileService implements BusinessInterface {
             throw new WrongDataPathExeption();
         }
         throw new ClientDoesNotExistExeption(name);
-    }
-
-    @Override
-    public boolean isClientNameUnique(String clientName) throws WrongDataPathExeption {
-        List<Client> clients = getAllClients();
-
-        if (clients == null) {
-            throw new WrongDataPathExeption();
-        }
-
-        return clients.stream().noneMatch(client -> client.getClientName().equals(clientName));
-    }
-
-    @Override
-    public void addNewClientToDatabase(Client client) throws WrongDataPathExeption {
-        List<Client> clients = getAllClients();
-
-        if (clients != null) {
-            clients.add(client);
-            updateClientsDatabase(clients);
-        } else {
-            throw new WrongDataPathExeption();
-        }
-    }
-
-    @Override
-    public void deleteClientFromDatabase(Client clientToDelete) throws WrongDataPathExeption {
-        List<Client> clients = getAllClients();
-
-
-        if (clients != null) {
-            if (clients.stream().anyMatch(client -> client.equals(clientToDelete))) {
-                clients.remove(clientToDelete);
-            }
-            updateClientsDatabase(clients);
-        } else {
-            throw new WrongDataPathExeption();
-        }
-    }
-
-    public void updateClientsDatabase(List<Client> clients) {
-        try {
-            PrintWriter printWriter = new PrintWriter(new FileWriter(CLIENT_PATH.getPath()));
-
-            clients.forEach(partner -> {
-                printWriter.println(partner.getClientName());
-                printWriter.println(partner.getClientID());
-                printWriter.println(partner.getClientStreetAddress());
-                printWriter.println(partner.getClientCityAddress());
-                printWriter.println(partner.getClientCountryAddress());
-                printWriter.println();
-            });
-
-            printWriter.close();
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-        }
     }
 
     @Override
@@ -106,6 +61,51 @@ public class BusinessFileService implements BusinessInterface {
             return allClients;
         } catch (FileNotFoundException e) {
             return null;
+        }
+    }
+
+    @Override
+    public void addNewClientToDatabase(Client client) throws WrongDataPathExeption {
+        List<Client> clients = getAllClients();
+
+        if (clients != null) {
+            clients.add(client);
+            updateClientsDatabase(clients);
+        } else {
+            throw new WrongDataPathExeption();
+        }
+    }
+
+    @Override
+    public void deleteClientFromDatabase(Client clientToDelete) throws WrongDataPathExeption {
+        List<Client> clients = getAllClients();
+
+        if (clients != null) {
+            if (clients.stream().anyMatch(client -> client.equals(clientToDelete))) {
+                clients.remove(clientToDelete);
+            }
+            updateClientsDatabase(clients);
+        } else {
+            throw new WrongDataPathExeption();
+        }
+    }
+
+    private void updateClientsDatabase(List<Client> clients) {
+        try {
+            PrintWriter printWriter = new PrintWriter(new FileWriter(CLIENT_PATH.getPath()));
+
+            clients.forEach(partner -> {
+                printWriter.println(partner.getClientName());
+                printWriter.println(partner.getClientID());
+                printWriter.println(partner.getClientStreetAddress());
+                printWriter.println(partner.getClientCityAddress());
+                printWriter.println(partner.getClientCountryAddress());
+                printWriter.println();
+            });
+
+            printWriter.close();
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
         }
     }
 }

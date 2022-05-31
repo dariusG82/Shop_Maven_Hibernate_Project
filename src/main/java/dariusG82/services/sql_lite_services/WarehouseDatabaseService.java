@@ -87,6 +87,18 @@ public class WarehouseDatabaseService extends SQLService implements WarehouseInt
     }
 
     @Override
+    public List<Item> getAllItems() {
+        Session session = sessionFactory.openSession();
+
+        Query<Item> itemQuery = session.createQuery("select data from Item data", Item.class);
+        List<Item> items = itemQuery.getResultList();
+
+        session.close();
+
+        return items;
+    }
+
+    @Override
     public Item getItemByName(String itemName) {
         Session session = sessionFactory.openSession();
 
@@ -118,17 +130,6 @@ public class WarehouseDatabaseService extends SQLService implements WarehouseInt
         session.close();
 
         return item;
-    }
-
-    @Override
-    public void addNewItem(Item item) {
-        Session session = sessionFactory.openSession();
-
-        session.beginTransaction();
-        session.persist(item);
-        session.getTransaction().commit();
-
-        session.close();
     }
 
     @Override
@@ -166,15 +167,5 @@ public class WarehouseDatabaseService extends SQLService implements WarehouseInt
         }
     }
 
-    @Override
-    public List<Item> getAllItems() {
-        Session session = sessionFactory.openSession();
 
-        Query<Item> itemQuery = session.createQuery("select data from Item data", Item.class);
-        List<Item> items = itemQuery.getResultList();
-
-        session.close();
-
-        return items;
-    }
 }

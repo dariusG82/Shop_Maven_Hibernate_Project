@@ -21,12 +21,29 @@ public class AdminFileService implements AdminInterface, FileReaderInterface {
     @Override
     public boolean isUsernameUnique(String username) {
         List<User> users = getAllUsers();
-        for (User user : users) {
-            if (user.getUsername().equals(username)) {
-                return false;
-            }
+        return users.stream()
+                .noneMatch(user -> user.getUsername().equals(username));
+    }
+
+    @Override
+    public User getUserByUsername(String username) {
+        List<User> users = getAllUsers();
+
+        return users.stream()
+                .filter(user -> user.getUsername().equals(username))
+                .findFirst()
+                .orElse(null);
+    }
+
+    @Override
+    public User getUser(String username, String password, UserType type) throws UserNotFoundException {
+        User user = getUserByUsername(username);
+
+        if(user != null && user.getUserType().equals(type.toString()) && user.getPassword().equals(password)){
+            return user;
         }
-        return true;
+
+        throw new UserNotFoundException();
     }
 
     @Override
@@ -51,29 +68,6 @@ public class AdminFileService implements AdminInterface, FileReaderInterface {
         throw new UserNotFoundException();
     }
 
-    @Override
-    public User getUser(String username, String password, UserType type) throws UserNotFoundException {
-        User user = getUserByUsername(username);
-
-        if(user != null && user.getUserType().equals(type.toString()) && user.getPassword().equals(password)){
-            return user;
-        }
-
-        throw new UserNotFoundException();
-    }
-
-    @Override
-    public User getUserByUsername(String username) {
-        List<User> users = getAllUsers();
-
-        for (User user : users) {
-            if (user.getUsername().equals(username)) {
-                return user;
-            }
-        }
-        return null;
-    }
-
     public void updateCurrentDateInDataString(LocalDate currentDate) throws WrongDataPathExeption, IOException {
         ArrayList<String> datalist = reader.getDataStrings();
 
@@ -92,32 +86,7 @@ public class AdminFileService implements AdminInterface, FileReaderInterface {
         reader.updateDataStrings(datalist);
     }
 
-    private boolean isUserInDatabase(String username) {
-        List<User> users = getAllUsers();
-
-        for (User user : users) {
-            if (user.getUsername().equals(username)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void updateAllUsers(List<User> users) throws IOException {
-        PrintWriter printWriter = new PrintWriter(new FileWriter(USERS_DATA_PATH.getPath()));
-
-        for (User user : users) {
-            printWriter.println(user.getName());
-            printWriter.println(user.getSurname());
-            printWriter.println(user.getUsername());
-            printWriter.println(user.getPassword());
-            printWriter.println(user.getUserType());
-            printWriter.println();
-        }
-
-        printWriter.close();
-    }
-
+    @Override
     public List<User> getAllUsers() {
         try {
             Scanner scanner = new Scanner(new File(USERS_DATA_PATH.getPath()));
@@ -149,5 +118,27 @@ public class AdminFileService implements AdminInterface, FileReaderInterface {
         } catch (IllegalArgumentException e) {
             return null;
         }
+    }
+
+    private boolean isUserInDatabase(String username) {
+        List<User> users = getAllUsers();
+
+        return users.stream()
+                .anyMatch(user -> user.getUsername().equals(username));
+    }
+
+    private void updateAllUsers(List<User> users) throws IOException {
+        PrintWriter printWriter = new PrintWriter(new FileWriter(USERS_DATA_PATH.getPath()));
+
+        users.forEach(user -> {
+            printWriter.println(user.getName());
+            printWriter.println(user.getSurname());
+            printWriter.println(user.getUsername());
+            printWriter.println(user.getPassword());
+            printWriter.println(user.getUserType());
+            printWriter.println();
+        });
+
+        printWriter.close();
     }
 }

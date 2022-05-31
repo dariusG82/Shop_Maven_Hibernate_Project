@@ -8,6 +8,8 @@ public interface DataManagement {
 
     BusinessInterface getBusinessService();
 
+    OrdersManagementInterface getOrderManagement();
+
     WarehouseInterface getWarehouseService();
 }
 

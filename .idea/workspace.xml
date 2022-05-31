@@ -4,19 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7b3737be-bb88-4701-8de6-70c69d9cb0ca" name="Changes" comment="Near Finish project">
+    <list default="true" id="7b3737be-bb88-4701-8de6-70c69d9cb0ca" name="Changes" comment="Updated DB services - next Stop File Reader services">
+      <change afterPath="$PROJECT_DIR$/src/main/java/dariusG82/data/interfaces/OrdersManagementInterface.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/dariusG82/services/file_services/OrderManagementFileService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/dariusG82/services/sql_lite_services/OrderManagementSQLiteService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/accounting/finance/CashJournalEntry.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/accounting/finance/CashJournalEntry.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/accounting/DailyReport.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/accounting/DailyReport.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/accounting/finance/CashRecord.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/accounting/finance/CashRecord.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/accounting/orders/Order.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/accounting/orders/Order.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/accounting/orders/OrderLine.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/accounting/orders/OrderLine.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/custom_exeptions/OrderDoesNotExistException.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/custom_exeptions/OrderDoesNotExistException.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/data/bussines.db" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/data/bussines.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/data/files/orders/purchaseOrderList.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/data/files/orders/purchaseOrderList.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/data/interfaces/AccountingInterface.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/data/interfaces/AccountingInterface.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/data/interfaces/AdminInterface.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/data/interfaces/AdminInterface.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/data/interfaces/BusinessInterface.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/data/interfaces/BusinessInterface.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/data/interfaces/DataManagement.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/data/interfaces/DataManagement.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/data/interfaces/WarehouseInterface.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/data/interfaces/WarehouseInterface.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/services/file_services/AccountingFileService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/services/file_services/AccountingFileService.java" afterDir="false" />
@@ -25,12 +21,8 @@
       <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/services/file_services/DataFromFileService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/services/file_services/DataFromFileService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/services/file_services/WarehouseFileService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/services/file_services/WarehouseFileService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/services/sql_lite_services/AccountingDatabaseService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/services/sql_lite_services/AccountingDatabaseService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/services/sql_lite_services/AdminDatabaseService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/services/sql_lite_services/AdminDatabaseService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/services/sql_lite_services/BusinessDatabaseService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/services/sql_lite_services/BusinessDatabaseService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/services/sql_lite_services/DataFromSQLiteService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/services/sql_lite_services/DataFromSQLiteService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/services/sql_lite_services/WarehouseDatabaseService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/services/sql_lite_services/WarehouseDatabaseService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/dariusG82/warehouse/Item.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dariusG82/warehouse/Item.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/testing/MainTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/testing/MainTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -161,6 +153,8 @@
       <workItem from="1653816330379" duration="30139000" />
       <workItem from="1653851308272" duration="946000" />
       <workItem from="1653924439004" duration="19932000" />
+      <workItem from="1653947112202" duration="132000" />
+      <workItem from="1654008803953" duration="8053000" />
     </task>
     <task id="LOCAL−00001" summary="Near Finish project">
       <created>1653851471817</created>
@@ -168,7 +162,13 @@
       <option name="presentableId" value="LOCAL−00001" />
       <updated>1653851471817</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL−00002" summary="Updated DB services - next Stop File Reader services">
+      <created>1653947219278</created>
+      <option name="number" value="LOCAL−00002" />
+      <option name="presentableId" value="LOCAL−00002" />
+      <updated>1653947219278</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -200,6 +200,7 @@
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="Near Finish project" />
-    <option name="LAST_COMMIT_MESSAGE" value="Near Finish project" />
+    <MESSAGE value="Updated DB services - next Stop File Reader services" />
+    <option name="LAST_COMMIT_MESSAGE" value="Updated DB services - next Stop File Reader services" />
   </component>
 </project>

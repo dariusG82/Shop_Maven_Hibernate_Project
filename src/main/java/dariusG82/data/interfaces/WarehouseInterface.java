@@ -24,8 +24,6 @@ public interface WarehouseInterface {
 
     Item getItemById(long id);
 
-    void addNewItem(Item item) throws ItemIsAlreadyInDatabaseException, IOException;
-
     long getNewItemID();
 
     void addNewItemCard(Item newItem) throws ItemIsAlreadyInDatabaseException, IOException;

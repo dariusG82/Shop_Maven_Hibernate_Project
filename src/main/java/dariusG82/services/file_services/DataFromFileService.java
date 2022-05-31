@@ -1,15 +1,14 @@
 package dariusG82.services.file_services;
 
-import dariusG82.data.interfaces.BusinessInterface;
-import dariusG82.data.interfaces.DataManagement;
-import dariusG82.data.interfaces.FileReaderInterface;
-import dariusG82.data.interfaces.WarehouseInterface;
+import dariusG82.data.interfaces.*;
 
 public class DataFromFileService implements DataManagement, FileReaderInterface {
 
     private final AdminFileService adminService = new AdminFileService();
     private final AccountingFileService accountingService = new AccountingFileService();
     private final BusinessFileService businessService = new BusinessFileService();
+
+    private final OrderManagementFileService orderManagementFileService = new OrderManagementFileService();
     private final WarehouseFileService warehouseService = new WarehouseFileService();
 
     public DataFromFileService() {
@@ -29,6 +28,11 @@ public class DataFromFileService implements DataManagement, FileReaderInterface 
     @Override
     public BusinessInterface getBusinessService() {
         return businessService;
+    }
+
+    @Override
+    public OrdersManagementInterface getOrderManagement() {
+        return orderManagementFileService;
     }
 
     @Override

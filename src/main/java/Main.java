@@ -20,9 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import static dariusG82.accounting.finance.CashOperation.*;
 import static dariusG82.accounting.orders.OrderSeries.*;
-import static dariusG82.services.file_services.DataFileIndex.*;
+import static dariusG82.services.file_services.DataFileIndex.BANK_ACCOUNT;
+import static dariusG82.services.file_services.DataFileIndex.CASH_REGISTER;
 import static dariusG82.tools.Menu.*;
 
 public class Main {
@@ -221,7 +221,7 @@ public class Main {
         while (true) {
             try {
                 LocalDate date = getLocalDate();
-                List<CashRecord> salesForDay = SERVICE.getAccountingService().getDailySaleDocuments(date, DAILY_INCOME.toString());
+                List<CashRecord> salesForDay = SERVICE.getAccountingService().getDailySaleDocuments(date, SALE.getSeries());
                 if (salesForDay.size() == 0) {
                     System.out.printf("There is no sales document for %s day\n", date);
                     return;
@@ -247,7 +247,7 @@ public class Main {
         while (true) {
             try {
                 LocalDate date = getLocalDate();
-                List<CashRecord> salesForDay = SERVICE.getAccountingService().getDailySaleDocuments(date, DAILY_EXPENSE.toString());
+                List<CashRecord> salesForDay = SERVICE.getAccountingService().getDailySaleDocuments(date, RETURN.getSeries());
                 System.out.printf("Return documents for %s is:\n", date);
                 System.out.println("*******************");
                 for (CashRecord cashRecord : salesForDay) {
@@ -395,7 +395,7 @@ public class Main {
         Item item = new Item(itemId, itemName, itemDescription, purchasePrice);
 
         try {
-            SERVICE.getWarehouseService().addNewItem(item);
+            SERVICE.getWarehouseService().addNewItemCard(item);
             System.out.printf("%s ItemCard successfully added to database\n", itemName);
         } catch (ItemIsAlreadyInDatabaseException e) {
             System.out.println(e.getMessage());
@@ -465,7 +465,7 @@ public class Main {
                     }
                     case 2 -> {
                         newSalesOrder.setOrderAmount(SERVICE.getAccountingService().getTotalOrderAmount(orderLines));
-                        SERVICE.getAccountingService().saveOrder(newSalesOrder, orderLines);
+                        SERVICE.getOrderManagement().saveOrder(newSalesOrder, orderLines);
                         System.out.printf("Total sales order cash amount = %.2f\n", newSalesOrder.getOrderAmount());
                         return;
                     }
@@ -527,7 +527,7 @@ public class Main {
                 {
                     System.out.printf("Credit card charged for %.2f Eur\n", orderAmount);
                     SERVICE.getAccountingService().updateCashBalance(orderAmount, BANK_ACCOUNT);
-                    SERVICE.getAccountingService().updateSalesOrderStatus(order);
+                    SERVICE.getOrderManagement().updateSalesOrderStatus(order);
                     System.out.println("Credit Card payment is accepted");
                     return;
                 }
@@ -549,7 +549,7 @@ public class Main {
                 double orderAmount = order.getOrderAmount();
                 if (amount == orderAmount || amount > orderAmount) {
                     SERVICE.getAccountingService().updateCashBalance(orderAmount, CASH_REGISTER);
-                    SERVICE.getAccountingService().updateSalesOrderStatus(order);
+                    SERVICE.getOrderManagement().updateSalesOrderStatus(order);
                     System.out.println("Cash payment is accepted");
                     if (amount > orderAmount) {
                         System.out.printf("Your return is: %.2f\n", amount - orderAmount);
@@ -591,9 +591,9 @@ public class Main {
                             for (OrderLine orderLine : returnOrderLines) {
                                 SERVICE.getWarehouseService().updateWarehouseStock(orderLine);
                             }
-                            SERVICE.getAccountingService().updateSalesOrderLines(order, returnOrderLines);
+                            SERVICE.getOrderManagement().updateSalesOrderLines(order, returnOrderLines);
                             newReturnOrder.setOrderAmount(SERVICE.getAccountingService().getTotalOrderAmount(returnOrderLines));
-                            SERVICE.getAccountingService().saveOrder(newReturnOrder, returnOrderLines);
+                            SERVICE.getOrderManagement().saveOrder(newReturnOrder, returnOrderLines);
                             makeCashReturnPayment(newReturnOrder);
                             System.out.printf("Total return order cash amount = %.2f\n", newReturnOrder.getOrderAmount());
                             return;
@@ -615,7 +615,7 @@ public class Main {
         String itemName = scanner.nextLine();
         Item returnedItem = null;
         try {
-            returnedItem = SERVICE.getAccountingService().getSoldItemByName(salesOrder, itemName);
+            returnedItem = SERVICE.getOrderManagement().getSoldItemByName(salesOrder, itemName);
         } catch (SQLException e) {
             System.out.println("Database ERROR");
         } catch (WrongDataPathExeption | FileNotFoundException | ItemIsNotInOrderException e) {
@@ -652,7 +652,7 @@ public class Main {
         System.out.printf("Order Nr: %s\n", order.getOrderSeries() + " " + order.getOrderNumber());
         List<OrderLine> orderLines;
         try {
-            orderLines = SERVICE.getAccountingService().getOrderLinesForOrder(order);
+            orderLines = SERVICE.getOrderManagement().getOrderLinesForOrder(order);
             for (OrderLine orderLine : orderLines) {
                 Item item = SERVICE.getWarehouseService().getItemById(orderLine.getItemID());
                 System.out.printf("Item: %s, quantity: %s, unitPrice: %.2f, total line amount %.2f\n",
@@ -693,7 +693,7 @@ public class Main {
                     case 2 -> {
                         System.out.printf("Total purchase order cash amount = %.2f\n", purchaseOrder.getOrderAmount());
                         SERVICE.getAccountingService().updateCashBalance(-purchaseOrder.getOrderAmount(), BANK_ACCOUNT);
-                        SERVICE.getAccountingService().saveOrder(purchaseOrder, purchaseOrderLines);
+                        SERVICE.getOrderManagement().saveOrder(purchaseOrder, purchaseOrderLines);
                         return;
                     }
                     default -> System.out.println("Wrong choice, choose again");
@@ -818,7 +818,7 @@ public class Main {
 
         if (requestedID.substring(0, 2).equals(orderSeries)) {
             try {
-                return SERVICE.getAccountingService().getDocumentByID(requestedID);
+                return SERVICE.getOrderManagement().getDocumentByID(requestedID);
             } catch (WrongDataPathExeption | ClientDoesNotExistExeption | SQLException |
                      OrderDoesNotExistException e) {
                 System.out.println(e.getMessage());

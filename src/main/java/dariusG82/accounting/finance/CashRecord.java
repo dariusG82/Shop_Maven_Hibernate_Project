@@ -80,6 +80,10 @@ public class CashRecord {
         return sellerId;
     }
 
+    public void updateAmount(double amount){
+        this.amount += amount;
+    }
+
     @Override
     public String toString() {
         return "CashRecord{" +

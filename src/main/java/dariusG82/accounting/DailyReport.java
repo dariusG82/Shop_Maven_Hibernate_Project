@@ -1,7 +1,5 @@
 package dariusG82.accounting;
 
-import dariusG82.accounting.finance.CashOperation;
-
 import java.time.LocalDate;
 
 public class DailyReport {
@@ -17,31 +15,16 @@ public class DailyReport {
         this.date = date;
         this.dailyIncome = 0.0;
         this.dailyExpenses = 0.0;
+        this.dailyBalance = 0.0;
     }
 
-    public DailyReport(LocalDate date, double dailyIncome, double dailyExpenses, double dailyBalance) {
-        this.reportID = null;
-        this.date = date;
-        this.dailyIncome = dailyIncome;
-        this.dailyExpenses = dailyExpenses;
-        this.dailyBalance = dailyBalance;
-    }
-
-    public DailyReport(String reportID, LocalDate date, double dailyIncome, double dailyExpenses, double dailyBalance) {
-        this.reportID = reportID;
-        this.date = date;
-        this.dailyIncome = dailyIncome;
-        this.dailyExpenses = dailyExpenses;
-        this.dailyBalance = dailyBalance;
-    }
-
-    public void updateDailyReport(CashOperation operation, double amount) {
-        switch (operation) {
-            case DAILY_INCOME -> {
+    public void updateDailyReport(String series, double amount) {
+        switch (series) {
+            case "SF" -> {
                 this.dailyIncome += amount;
                 this.dailyExpenses += 0.0;
             }
-            case DAILY_EXPENSE -> {
+            case "RE" -> {
                 this.dailyIncome += 0.0;
                 this.dailyExpenses += amount;
             }
